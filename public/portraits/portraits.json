@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "beschreibung": "Bildpool-Metadaten. Dateien: {gruppe}_{nummer}_{stimmung}.webp (stimmung: froh, neutral, bedrueckt). Solange 'bilder' leer ist, zeigt das Spiel Platzhalter.",
+  "bilder": []
+}

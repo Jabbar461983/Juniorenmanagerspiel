@@ -1,0 +1,343 @@
+{
+  "_kommentar": "Alle Balancing-Werte des Spiels. Werte hier anpassen, nicht im Code.",
+  "spiel": {
+    "laufzeitStandard": 5,
+    "wochenProSaison": 52,
+    "etappeMaxSaisons": 1,
+    "startbudgetStandard": 15000,
+    "schwierigkeit": {
+      "leicht": 25000,
+      "normal": 15000,
+      "schwer": 10000
+    }
+  },
+  "stufen": {
+    "U9": {
+      "alterMin": 6,
+      "alterMax": 8,
+      "idealMin": 8,
+      "idealMax": 14,
+      "spielerProSpiel": 10,
+      "startKinder": [
+        9,
+        12
+      ]
+    },
+    "U12": {
+      "alterMin": 9,
+      "alterMax": 11,
+      "idealMin": 10,
+      "idealMax": 16,
+      "spielerProSpiel": 12,
+      "startKinder": [
+        10,
+        14
+      ]
+    },
+    "U15": {
+      "alterMin": 12,
+      "alterMax": 14,
+      "idealMin": 12,
+      "idealMax": 18,
+      "spielerProSpiel": 14,
+      "startKinder": [
+        10,
+        13
+      ]
+    },
+    "U18": {
+      "alterMin": 15,
+      "alterMax": 17,
+      "idealMin": 12,
+      "idealMax": 18,
+      "spielerProSpiel": 14,
+      "startKinder": [
+        8,
+        12
+      ]
+    }
+  },
+  "start": {
+    "trainerProTeam": [
+      1,
+      3
+    ],
+    "reserveTrainer": 1,
+    "geschwisterWahrscheinlichkeit": 0.18,
+    "zweiElternWahrscheinlichkeit": 0.7,
+    "zufriedenheitStart": [
+      55,
+      80
+    ],
+    "einkommen": {
+      "tief": 0.25,
+      "mittel": 0.55,
+      "hoch": 0.2
+    }
+  },
+  "zufriedenheit": {
+    "gewichte": {
+      "trainerbeziehung": 0.25,
+      "teamklima": 0.2,
+      "spassEinsatz": 0.2,
+      "entwicklung": 0.15,
+      "elterneinfluss": 0.1,
+      "rahmen": 0.1
+    },
+    "annaeherung": 0.2,
+    "ohneTrainer": 15,
+    "generationenMixBonus": 8,
+    "geschlechterMixBonus": 4,
+    "geschlechterMixFaktorJugend": 1.5,
+    "belastungAbzugAb": 70,
+    "belastungAbzugMax": 20,
+    "absageAbzug": 6,
+    "absageAbzugFolgeFaktor": 1.6,
+    "zuGrossAbzugProKind": 4,
+    "zuKleinAbzugProKind": 3,
+    "kleingruppeBonus": 6,
+    "zusammenlegenAbzugJuengere": 4
+  },
+  "teamwert": {
+    "gewichte": [
+      1,
+      0.3,
+      0.15,
+      0.1
+    ],
+    "ueberbesetzungFaktor": 0.2,
+    "rollenBonus": 1.1,
+    "maxWert": 24,
+    "ohneHaupttrainerAbzug": 0.85
+  },
+  "schwerpunkte": {
+    "spass": {
+      "technik": 0.6,
+      "kondition": 0.5,
+      "spielverstaendnis": 0.6,
+      "spass": {
+        "U9": 14,
+        "U12": 10,
+        "U15": 6,
+        "U18": 4
+      }
+    },
+    "technik": {
+      "technik": 1.4,
+      "kondition": 0.5,
+      "spielverstaendnis": 0.8,
+      "spass": {
+        "U9": 2,
+        "U12": 4,
+        "U15": 2,
+        "U18": 2
+      }
+    },
+    "kondition": {
+      "technik": 0.5,
+      "kondition": 1.5,
+      "spielverstaendnis": 0.5,
+      "spass": {
+        "U9": -12,
+        "U12": -6,
+        "U15": -2,
+        "U18": 0
+      }
+    },
+    "taktik": {
+      "technik": 0.6,
+      "kondition": 0.5,
+      "spielverstaendnis": 1.4,
+      "spass": {
+        "U9": -8,
+        "U12": -2,
+        "U15": 2,
+        "U18": 3
+      }
+    },
+    "spielformen": {
+      "technik": 1.0,
+      "kondition": 0.9,
+      "spielverstaendnis": 1.0,
+      "spass": {
+        "U9": 8,
+        "U12": 8,
+        "U15": 6,
+        "U18": 5
+      }
+    }
+  },
+  "training": {
+    "grundFortschritt": 0.05,
+    "fachwissenEinfluss": 0.04,
+    "talentEinfluss": 0.06,
+    "maxWert": 20,
+    "trainingsProWocheMax": 3,
+    "minKinderFuerTraining": 6,
+    "spassProTraining": {
+      "0": -25,
+      "1": -6,
+      "2": 4,
+      "3": 6
+    }
+  },
+  "abwesenheit": {
+    "normal": 0.12,
+    "trainerNormal": 0.05
+  },
+  "austritt": {
+    "basisProWoche": 0.0008,
+    "schwelle": 40,
+    "unterSchwelleMax": 0.07,
+    "motivationSchwelle": 6,
+    "motivationZusatz": 0.015,
+    "saisonende": {
+      "unter40": 0.55,
+      "unter55": 0.2,
+      "unter70": 0.08,
+      "sonst": 0.03
+    },
+    "beitragElastizitaet": 0.8,
+    "tiefesEinkommenFaktor": 1.8,
+    "haertefallReduktion": 0.6
+  },
+  "eintritt": {
+    "mundZuMundSchwelle": 70,
+    "mundZuMundProKind": 0.0035,
+    "spontanProWoche": 0.08,
+    "beitragElastizitaet": 1.0,
+    "rufEinfluss": 0.01,
+    "schnupperWochen": 2,
+    "bleibenBasis": 0.35,
+    "bleibenZufriedenheitFaktor": 0.6,
+    "geschwisterNeuWahrscheinlichkeit": 0.1
+  },
+  "finanzen": {
+    "beitraegeStandard": {
+      "U9": 180,
+      "U12": 240,
+      "U15": 300,
+      "U18": 340
+    },
+    "beitraegeReferenz": {
+      "U9": 180,
+      "U12": 240,
+      "U15": 300,
+      "U18": 340
+    },
+    "beitragMin": 0,
+    "beitragMax": 1000,
+    "geschwisterrabattStandard": 20,
+    "haertefallRabatt": 0.5,
+    "hallenmieteProTraining": 28,
+    "material": {
+      "tief": 15,
+      "mittel": 40,
+      "hoch": 80
+    },
+    "materialRahmen": {
+      "tief": 40,
+      "mittel": 65,
+      "hoch": 85
+    },
+    "entschaedigungProTrainer": {
+      "tief": 0,
+      "mittel": 12,
+      "hoch": 25
+    },
+    "entschaedigungMotivation": {
+      "tief": -0.15,
+      "mittel": 0,
+      "hoch": 0.1
+    },
+    "verbandTeamgebuehr": 300,
+    "verbandLizenzProKind": 25,
+    "vereinsbeitragAbSaison2": 8000,
+    "warnungNachWochen": 2
+  },
+  "trainer": {
+    "belastungProTraining": 5,
+    "belastungErholung": 11,
+    "belastungFerienErholung": 18,
+    "belastungProZusatzteam": 8,
+    "ruecktrittBelastung": 90,
+    "ruecktrittWochenWahrscheinlichkeit": 0.04,
+    "ruecktrittSaisonende": 0.08,
+    "ruecktrittTiefeMotivation": 0.25,
+    "erfahrungProSaison": 1,
+    "fachwissenProSaison": 0.3,
+    "maxTeamgroesse": 4,
+    "belastungUeberVerfuegbarkeit": 6
+  },
+  "wettkampf": {
+    "u9Turniere": 6,
+    "ligaTurniere": 8,
+    "ligaTeams": 8,
+    "finalTeilnehmer": 6,
+    "u18Teams": 10,
+    "playoffTeams": 8,
+    "toreBasis": 3,
+    "staerkeFaktor": 0.13,
+    "tagesformStreuung": 1.3,
+    "trainerFachwissenFaktor": 0.12,
+    "gegnerStaerke": {
+      "U9": [
+        4,
+        8
+      ],
+      "U12": [
+        6,
+        10
+      ],
+      "U15": [
+        8,
+        12
+      ],
+      "U18": [
+        10,
+        14
+      ]
+    },
+    "einsatzLeistungsspreizung": {
+      "U9": 0,
+      "U12": 0.2,
+      "U15": 0.4,
+      "U18": 0.5
+    },
+    "einsatzregelnSpreizungFaktor": 0.3,
+    "siegZufriedenheit": 1.5,
+    "niederlageZufriedenheit": -1,
+    "spieleProTurnier": 3
+  },
+  "ereignisse": {
+    "maxProWoche": 3,
+    "standardAbkuehlung": 4,
+    "ablaufWochen": 2
+  },
+  "bewertung": {
+    "exponent": 2,
+    "faktor": 10,
+    "titel": [
+      {
+        "ab": 700,
+        "titel": "Herzensverein"
+      },
+      {
+        "ab": 450,
+        "titel": "Talentschmiede"
+      },
+      {
+        "ab": 250,
+        "titel": "Solide Abteilung"
+      },
+      {
+        "ab": 120,
+        "titel": "Baustelle mit Potenzial"
+      },
+      {
+        "ab": 0,
+        "titel": "Neuanfang nötig"
+      }
+    ]
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "_kommentar": "Namen nach Herkunft. 'gewicht' steuert die Häufigkeit, 'hautton' die Verteilung der Portrait-Hauttöne.",
+  "herkuenfte": [
+    {
+      "id": "schweiz", "gewicht": 48,
+      "hautton": { "hell": 0.85, "hell-mittel": 0.15 },
+      "w": ["Lea", "Mia", "Lina", "Elena", "Emma", "Nina", "Lara", "Alina", "Sara", "Anna", "Laura", "Leonie", "Julia", "Noemi", "Elin", "Jana", "Livia", "Ronja", "Selina", "Fabienne", "Andrea", "Barbara", "Sandra", "Monika", "Ursula", "Regula", "Daniela", "Corinne", "Franziska", "Rahel", "Simone", "Verena", "Therese", "Ruth", "Brigitte"],
+      "m": ["Noah", "Liam", "Luca", "Leon", "Elias", "Nico", "Levin", "Jonas", "Matteo", "Samuel", "Gian", "Tim", "Janis", "Nils", "Lars", "Fabian", "Simon", "Reto", "Urs", "Beat", "Thomas", "Daniel", "Stefan", "Christoph", "Martin", "Andreas", "Markus", "Peter", "Hans", "Ueli", "Res", "Kurt", "Fritz", "Jürg", "Adrian"],
+      "nachnamen": ["Müller", "Meier", "Schmid", "Keller", "Weber", "Huber", "Schneider", "Steiner", "Brunner", "Gerber", "Baumann", "Frei", "Zbinden", "Aebi", "Bühler", "Wyss", "Kunz", "Moser", "Hofer", "Lüthi", "Rüegsegger", "Gfeller", "Zaugg", "Stucki", "Iseli", "Kohler", "Burri", "Hostettler", "Schüpbach", "Wenger"]
+    },
+    {
+      "id": "romandie", "gewicht": 5,
+      "hautton": { "hell": 0.8, "hell-mittel": 0.2 },
+      "w": ["Chloé", "Camille", "Léa", "Manon", "Inès", "Juliette", "Céline", "Sophie", "Isabelle", "Nathalie"],
+      "m": ["Louis", "Hugo", "Théo", "Mathis", "Jules", "Bastien", "Olivier", "Pascal", "Laurent", "Yves"],
+      "nachnamen": ["Rochat", "Favre", "Bonvin", "Perrin", "Chevalley", "Dubois", "Golay", "Monnier", "Rey", "Girard"]
+    },
+    {
+      "id": "italien", "gewicht": 8,
+      "hautton": { "hell": 0.5, "hell-mittel": 0.5 },
+      "w": ["Giulia", "Sofia", "Chiara", "Alessia", "Martina", "Francesca", "Valentina", "Elisa", "Rosa", "Paola"],
+      "m": ["Alessandro", "Lorenzo", "Marco", "Davide", "Simone", "Giuseppe", "Antonio", "Fabio", "Mario", "Enzo"],
+      "nachnamen": ["Rossi", "Bianchi", "Esposito", "Romano", "Ferrari", "Colombo", "Ricci", "De Luca", "Galli", "Conti"]
+    },
+    {
+      "id": "portugal", "gewicht": 6,
+      "hautton": { "hell-mittel": 0.6, "mittel": 0.4 },
+      "w": ["Beatriz", "Mariana", "Inês", "Leonor", "Matilde", "Carolina", "Ana", "Joana", "Rita", "Catarina"],
+      "m": ["Tiago", "Rodrigo", "Diogo", "Gonçalo", "Afonso", "João", "Rui", "Nuno", "Pedro", "Miguel"],
+      "nachnamen": ["Silva", "Santos", "Ferreira", "Pereira", "Oliveira", "Costa", "Rodrigues", "Martins", "Sousa", "Gomes"]
+    },
+    {
+      "id": "balkan", "gewicht": 9,
+      "hautton": { "hell": 0.6, "hell-mittel": 0.4 },
+      "w": ["Ana", "Mila", "Elena", "Jovana", "Sara", "Teodora", "Ivana", "Marija", "Dragana", "Lejla", "Amra", "Emina"],
+      "m": ["Luka", "Stefan", "Nikola", "Marko", "Filip", "Aleksandar", "Dejan", "Goran", "Emir", "Adnan", "Haris", "Dario"],
+      "nachnamen": ["Jovanović", "Petrović", "Nikolić", "Marković", "Kovačević", "Hodžić", "Begić", "Babić", "Horvat", "Delić"]
+    },
+    {
+      "id": "albanisch", "gewicht": 7,
+      "hautton": { "hell": 0.5, "hell-mittel": 0.5 },
+      "w": ["Elira", "Arta", "Blerta", "Drita", "Era", "Liridona", "Albana", "Vjosa", "Rina", "Ardita"],
+      "m": ["Arbnor", "Besart", "Dardan", "Granit", "Valon", "Leutrim", "Fatmir", "Arben", "Driton", "Shkelzen"],
+      "nachnamen": ["Krasniqi", "Berisha", "Gashi", "Morina", "Shala", "Hoxha", "Rexhepi", "Bytyqi", "Kastrati", "Zeqiri"]
+    },
+    {
+      "id": "tuerkei", "gewicht": 4,
+      "hautton": { "hell-mittel": 0.6, "mittel": 0.4 },
+      "w": ["Elif", "Zeynep", "Defne", "Ayşe", "Melis", "Selin", "Emine", "Derya"],
+      "m": ["Emre", "Yusuf", "Mert", "Can", "Deniz", "Kerem", "Mehmet", "Hakan"],
+      "nachnamen": ["Yılmaz", "Kaya", "Demir", "Şahin", "Çelik", "Arslan", "Doğan", "Aydın"]
+    },
+    {
+      "id": "tamilisch", "gewicht": 3,
+      "hautton": { "mittel-dunkel": 0.6, "dunkel": 0.4 },
+      "w": ["Thivya", "Kavya", "Sharmila", "Abinaya", "Nithya", "Priya"],
+      "m": ["Kajan", "Arun", "Thushan", "Niruban", "Sivakumar", "Rajan"],
+      "nachnamen": ["Sivarajah", "Thiruchelvam", "Kandiah", "Selvarajah", "Rasiah", "Nadarajah"]
+    },
+    {
+      "id": "eritrea", "gewicht": 3,
+      "hautton": { "mittel-dunkel": 0.4, "dunkel": 0.6 },
+      "w": ["Selam", "Helen", "Saba", "Ruta", "Luwam", "Feven"],
+      "m": ["Yonas", "Filmon", "Daniel", "Abel", "Robel", "Merhawi"],
+      "nachnamen": ["Tesfay", "Ghebremariam", "Haile", "Kidane", "Mehari", "Berhane"]
+    },
+    {
+      "id": "westafrika", "gewicht": 2,
+      "hautton": { "dunkel": 0.8, "mittel-dunkel": 0.2 },
+      "w": ["Aminata", "Fatou", "Awa", "Mariama", "Adjoa"],
+      "m": ["Moussa", "Ibrahima", "Kofi", "Ousmane", "Kwame"],
+      "nachnamen": ["Diallo", "Traoré", "Mensah", "Ndiaye", "Koné"]
+    },
+    {
+      "id": "spanien_lateinamerika", "gewicht": 3,
+      "hautton": { "hell-mittel": 0.5, "mittel": 0.4, "mittel-dunkel": 0.1 },
+      "w": ["Lucía", "Valeria", "Camila", "Isabella", "Paula", "Carmen"],
+      "m": ["Mateo", "Diego", "Santiago", "Pablo", "Javier", "Carlos"],
+      "nachnamen": ["García", "Fernández", "López", "Martínez", "Torres", "Ramírez"]
+    },
+    {
+      "id": "syrien_afghanistan", "gewicht": 2,
+      "hautton": { "hell-mittel": 0.4, "mittel": 0.6 },
+      "w": ["Rama", "Lana", "Nour", "Mahsa", "Farah", "Zahra"],
+      "m": ["Omar", "Karim", "Ahmad", "Ali", "Hamid", "Yousef"],
+      "nachnamen": ["Al-Hassan", "Haddad", "Khalil", "Ahmadi", "Rahimi", "Sultani"]
+    }
+  ]
+}

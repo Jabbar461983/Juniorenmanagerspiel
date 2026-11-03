@@ -1,0 +1,11 @@
+{
+  "_kommentar": "Schulferien als Monat-Tag (MM-TT). Ferien, die im Juni–Dezember beginnen, gehören zum Saisonstartjahr, Januar–Mai zum Folgejahr. Standard: Kanton Bern (gerundete Richtwerte).",
+  "region": "Kanton Bern",
+  "ferien": [
+    { "id": "sommer",   "name": "Sommerferien",   "von": "07-04", "bis": "08-09", "abwesenheitKinder": 0.45, "abwesenheitTrainer": 0.35 },
+    { "id": "herbst",   "name": "Herbstferien",   "von": "09-26", "bis": "10-18", "abwesenheitKinder": 0.3,  "abwesenheitTrainer": 0.25 },
+    { "id": "winter",   "name": "Winterferien",   "von": "12-24", "bis": "01-04", "abwesenheitKinder": 0.4,  "abwesenheitTrainer": 0.35 },
+    { "id": "sport",    "name": "Sportferien",    "von": "02-07", "bis": "02-15", "abwesenheitKinder": 0.4,  "abwesenheitTrainer": 0.3 },
+    { "id": "fruehling","name": "Frühlingsferien","von": "04-04", "bis": "04-19", "abwesenheitKinder": 0.3,  "abwesenheitTrainer": 0.25 }
+  ]
+}
