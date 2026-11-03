@@ -1,0 +1,8 @@
+{
+  "massnahmen": [
+    { "id": "schnuppertag", "name": "Schnuppertag", "beschreibung": "Offenes Training mit Spielformen, Leihmaterial und Sirup. Zieht vor allem Jüngere an.", "kosten": 300, "reichweite": [3, 7], "alter": [6, 12], "zielStufeWaehlbar": false },
+    { "id": "schulbesuch", "name": "Schulbesuch", "beschreibung": "Eine Trainerin zeigt Streethockey im Turnunterricht. Wirkt gezielt auf eine Stufe.", "kosten": 120, "reichweite": [2, 5], "alter": [6, 17], "zielStufeWaehlbar": true },
+    { "id": "flyer", "name": "Flyer", "beschreibung": "Flyer in Schulen, Läden und am Gemeindebrett. Günstig, aber breit gestreut.", "kosten": 150, "reichweite": [1, 4], "alter": [6, 17], "zielStufeWaehlbar": false },
+    { "id": "online", "name": "Online-Werbung", "beschreibung": "Gezielte Werbung in Elterngruppen und sozialen Netzwerken. Erreicht eher Ältere.", "kosten": 220, "reichweite": [2, 5], "alter": [10, 17], "zielStufeWaehlbar": false }
+  ]
+}

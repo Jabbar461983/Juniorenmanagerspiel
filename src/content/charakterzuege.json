@@ -1,0 +1,37 @@
+{
+  "_kommentar": "Charakterzüge mit Modifikatoren. faktoren: Punkte auf die Zufriedenheitsfaktoren (0–100). teamklima: Beitrag zum Klima des ganzen Teams. negativFaktor: Verstärkung negativer Ereigniseffekte.",
+  "kinder": [
+    { "id": "teamplayer", "name": "Teamplayer", "beschreibung": "Denkt ans Team, passt gern ab.", "faktoren": { "teamklima": 4 }, "teamklima": 3 },
+    { "id": "einzelkaempfer", "name": "Einzelkämpfer:in", "beschreibung": "Will den Ball und das Tor selbst.", "faktoren": { "spassEinsatz": -3 }, "teamklima": -2, "einsatzSensibel": 1.3 },
+    { "id": "schuechtern", "name": "schüchtern", "beschreibung": "Braucht Zeit, um aufzutauen.", "faktoren": { "trainerbeziehung": -4 }, "kinderverstaendnisSensibel": 1.4 },
+    { "id": "spassvogel", "name": "Spassvogel", "beschreibung": "Bringt alle zum Lachen, manchmal auch im falschen Moment.", "faktoren": { "spassEinsatz": 5 }, "teamklima": 2 },
+    { "id": "ehrgeizling", "name": "Ehrgeizling", "beschreibung": "Will gewinnen und besser werden.", "faktoren": { "entwicklung": 3 }, "einsatzSensibel": 1.4, "siegSensibel": 2 },
+    { "id": "rebell", "name": "Rebell:in", "beschreibung": "Stellt Regeln in Frage.", "faktoren": { "trainerbeziehung": -5 }, "teamklima": -3 },
+    { "id": "sensibel", "name": "sensibel", "beschreibung": "Nimmt sich Kritik und Bankplätze zu Herzen.", "faktoren": {}, "negativFaktor": 1.5, "einsatzSensibel": 1.2 },
+    { "id": "anfuehrer", "name": "Anführer:in", "beschreibung": "Reisst andere mit.", "faktoren": { "teamklima": 3 }, "teamklima": 4 },
+    { "id": "neuzuzug_sprache", "name": "Neuzuzug mit wenig Deutschkenntnissen", "beschreibung": "Versteht noch nicht alles, will aber dazugehören.", "faktoren": { "teamklima": -6, "trainerbeziehung": -3 }, "aufhebendesFlag": "buddy" }
+  ],
+  "trainer": [
+    { "id": "zuverlaessig", "name": "zuverlässig", "beschreibung": "Sagt selten ab.", "absageFaktor": 0.5 },
+    { "id": "geduldig", "name": "geduldig", "beschreibung": "Bleibt ruhig, auch wenn es laut wird.", "kinderverstaendnis": 1 },
+    { "id": "motivator", "name": "Motivator:in", "beschreibung": "Steckt mit Begeisterung an.", "spass": 3 },
+    { "id": "chaotisch", "name": "chaotisch", "beschreibung": "Vergisst gern etwas.", "absageFaktor": 1.6, "organisation": -1 },
+    { "id": "ehrgeizig", "name": "ehrgeizig", "beschreibung": "Will Resultate sehen.", "spass": -2, "fachwissen": 1 },
+    { "id": "vielbeschaeftigt", "name": "vielbeschäftigt", "beschreibung": "Job und Familie lassen wenig Luft.", "absageFaktor": 1.8 }
+  ],
+  "eltern": [
+    { "id": "hilfsbereit", "name": "hilfsbereit" },
+    { "id": "kritisch", "name": "kritisch" },
+    { "id": "gelassen", "name": "gelassen" },
+    { "id": "laut_an_der_bande", "name": "laut an der Bande" },
+    { "id": "gut_vernetzt", "name": "gut vernetzt" }
+  ],
+  "elternTypen": [
+    { "id": "engagiert", "name": "Engagiert", "gewicht": 25, "basis": 70, "beschreibung": "Hilft bei Anlässen, fährt an Spiele, mischt sich manchmal ein." },
+    { "id": "ehrgeizig", "name": "Ehrgeizig", "gewicht": 15, "basis": 45, "einsatzAbhaengig": 35, "beschreibung": "Fördert das Kind, macht Druck, fordert Einsatzzeit." },
+    { "id": "abwesend", "name": "Abwesend", "gewicht": 15, "basis": 40, "beschreibung": "Keine Konflikte, aber oft kein Transport." },
+    { "id": "kritiker", "name": "Kritiker:in", "gewicht": 12, "basis": 50, "beschreibung": "Deckt echte Probleme auf, sorgt für Unruhe." },
+    { "id": "sponsor", "name": "Sponsor-Typ", "gewicht": 8, "basis": 60, "beschreibung": "Bringt Geld oder Material, erwartet Gegenleistung." },
+    { "id": "potenziellerTrainer", "name": "Potenzielle:r Trainer:in", "gewicht": 25, "basis": 65, "beschreibung": "Könnte ausgebildet werden." }
+  ]
+}

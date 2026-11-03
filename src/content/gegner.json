@@ -1,0 +1,9 @@
+{
+  "_kommentar": "Fiktive Gegnervereine (computergesteuert).",
+  "vereine": [
+    "SHC Aaretal", "Streethockey Gürbetal", "SHC Emmental Eagles", "Seeland Sharks", "SHC Oberaargau",
+    "Thunersee Tigers", "SHC Gantrisch", "Juniors Bümpliz", "SHC Langnau Lynx", "Kiesental Kings",
+    "SHC Moossee", "Grauholz Grizzlies", "SHC Frutigland", "Wohlen Wolves", "SHC Belpberg"
+  ],
+  "hallen": ["Turnhalle Schulhaus Dorf", "Sporthalle Mitte", "Mehrzweckhalle Allmend", "Turnhalle Oberstufe"]
+}

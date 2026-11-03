@@ -1,0 +1,1350 @@
+{
+  "_kommentar": "Datengetriebene Ereignisse. Auslöser, Beteiligte, Optionen und Effekte sind im Spielkern (src/engine/ereignisse.ts) dokumentiert. Platzhalter im Text: {rolle} = Name, {rolle.vorname} = Vorname.",
+  "vorlagen": [
+    {
+      "id": "trainerabsage",
+      "titel": "Kurzfristige Trainerabsage",
+      "absender": "{trainer}",
+      "kategorie": "alltag",
+      "text": "{trainer.vorname} meldet sich kurzfristig vom Training von {team} ab. Was machst du mit dem Training?",
+      "pflicht": true,
+      "ausloeser": {
+        "wahrscheinlichkeit": 0.22,
+        "abkuehlung": 2,
+        "modifikatoren": [
+          {
+            "typ": "beteiligterWert",
+            "rolle": "trainer",
+            "wert": "belastung",
+            "ab": 60,
+            "faktor": 1.8
+          },
+          {
+            "typ": "trainerZug",
+            "rolle": "trainer",
+            "zug": "zuverlaessig",
+            "faktor": 0.5
+          },
+          {
+            "typ": "trainerZug",
+            "rolle": "trainer",
+            "zug": "vielbeschaeftigt",
+            "faktor": 1.6
+          },
+          {
+            "typ": "trainerZug",
+            "rolle": "trainer",
+            "zug": "chaotisch",
+            "faktor": 1.4
+          }
+        ]
+      },
+      "beteiligte": [
+        {
+          "rolle": "team",
+          "art": "team",
+          "auswahl": "mitTraining"
+        },
+        {
+          "rolle": "trainer",
+          "art": "trainer",
+          "auswahl": "imTeam",
+          "aus": "team"
+        },
+        {
+          "rolle": "ersatzTrainer",
+          "art": "trainer",
+          "auswahl": "ausAnderemTeam",
+          "aus": "team",
+          "optional": true
+        },
+        {
+          "rolle": "helfer",
+          "art": "kind",
+          "auswahl": "u18Hilfsleiter",
+          "optional": true
+        },
+        {
+          "rolle": "anderesTeam",
+          "art": "team",
+          "auswahl": "anderesTeam",
+          "aus": "team",
+          "optional": true
+        }
+      ],
+      "optionen": [
+        {
+          "id": "ersatz",
+          "text": "{ersatzTrainer.vorname} aus einem anderen Team springt ein",
+          "benoetigt": [
+            "ersatzTrainer"
+          ],
+          "effekte": [
+            {
+              "typ": "trainerBelastung",
+              "ziel": "ersatzTrainer",
+              "wert": 8
+            },
+            {
+              "typ": "zufriedenheit",
+              "ziel": "teamKinder",
+              "wert": -1
+            }
+          ],
+          "folge": "{ersatzTrainer.vorname} übernimmt. Das Training läuft, aber {ersatzTrainer.vorname} ist etwas müder."
+        },
+        {
+          "id": "hilfsleiter",
+          "text": "{helfer.vorname} aus der U18 leitet als Hilfsleiter:in",
+          "benoetigt": [
+            "helfer"
+          ],
+          "effekte": [
+            {
+              "typ": "zufriedenheit",
+              "ziel": "kind",
+              "rolle": "helfer",
+              "wert": 5
+            },
+            {
+              "typ": "motivation",
+              "ziel": "kind",
+              "rolle": "helfer",
+              "wert": 1
+            },
+            {
+              "typ": "zufriedenheit",
+              "ziel": "teamKinder",
+              "wert": -2
+            }
+          ],
+          "folge": "{helfer.vorname} ist stolz auf das Vertrauen. Die Kinder finden es spannend, auch wenn nicht alles klappt."
+        },
+        {
+          "id": "zusammenlegen",
+          "text": "Training mit {anderesTeam} zusammenlegen",
+          "benoetigt": [
+            "anderesTeam"
+          ],
+          "effekte": [
+            {
+              "typ": "training",
+              "ziel": "team",
+              "aktion": "zusammenlegen"
+            },
+            {
+              "typ": "trainerBelastung",
+              "ziel": "trainerVon:anderesTeam",
+              "wert": 5
+            }
+          ],
+          "folge": "Die beiden Teams trainieren gemeinsam. Es ist eng, aber es läuft."
+        },
+        {
+          "id": "absagen",
+          "text": "Training absagen",
+          "effekte": [
+            {
+              "typ": "training",
+              "ziel": "team",
+              "aktion": "absagen"
+            },
+            {
+              "typ": "elternStimmung",
+              "ziel": "teamEltern",
+              "wert": -3
+            }
+          ],
+          "folge": "Das Training fällt aus. Einige Eltern sind verärgert."
+        }
+      ],
+      "standardOption": "absagen"
+    },
+    {
+      "id": "halle_doppelt",
+      "titel": "Halle doppelt belegt",
+      "absender": "Hallenwart Gemeinde",
+      "kategorie": "alltag",
+      "text": "Die {team.halle} ist am Trainingsabend von {team} doppelt vergeben: Der Turnverein hat dieselbe Zeit reserviert.",
+      "pflicht": true,
+      "ausloeser": {
+        "wahrscheinlichkeit": 0.06,
+        "abkuehlung": 6,
+        "ferien": "nie"
+      },
+      "beteiligte": [
+        {
+          "rolle": "team",
+          "art": "team",
+          "auswahl": "mitTraining"
+        }
+      ],
+      "optionen": [
+        {
+          "id": "aussen",
+          "text": "Auf den Aussenplatz ausweichen",
+          "effekte": [
+            {
+              "typ": "training",
+              "ziel": "team",
+              "aktion": "aussenplatz"
+            },
+            {
+              "typ": "zufall",
+              "wahrscheinlichkeit": 0.4,
+              "text": "Es regnet in Strömen.",
+              "dann": [
+                {
+                  "typ": "zufriedenheit",
+                  "ziel": "teamKinder",
+                  "wert": -3
+                }
+              ],
+              "sonst": [
+                {
+                  "typ": "zufriedenheit",
+                  "ziel": "teamKinder",
+                  "wert": 2
+                }
+              ]
+            }
+          ],
+          "folge": "Das Training findet draussen statt – je nach Wetter ein Erlebnis oder eine nasse Sache."
+        },
+        {
+          "id": "teilen",
+          "text": "Halle mit dem Turnverein teilen (halbe Fläche)",
+          "effekte": [
+            {
+              "typ": "training",
+              "ziel": "team",
+              "aktion": "reduziert"
+            }
+          ],
+          "folge": "Halbe Halle, halbes Tempo. Die Kinder haben trotzdem trainiert."
+        },
+        {
+          "id": "ersatzhalle",
+          "text": "Ersatzhalle mieten (CHF 150)",
+          "effekte": [
+            {
+              "typ": "kasse",
+              "wert": -150,
+              "text": "Ersatzhalle"
+            }
+          ],
+          "folge": "Die Ersatzhalle kostet, aber das Training läuft normal."
+        },
+        {
+          "id": "absagen",
+          "text": "Training absagen",
+          "effekte": [
+            {
+              "typ": "training",
+              "ziel": "team",
+              "aktion": "absagen"
+            }
+          ],
+          "folge": "Das Training fällt aus."
+        }
+      ],
+      "standardOption": "absagen"
+    },
+    {
+      "id": "ferien_abwesenheit",
+      "titel": "Viele Abwesenheiten in den Ferien",
+      "absender": "{trainer}",
+      "kategorie": "alltag",
+      "text": "In den {ferien} haben sich bei {team} viele abgemeldet. Erwartet werden nur etwa {anwesende} Kinder. Wie soll das Training aussehen?",
+      "pflicht": true,
+      "ausloeser": {
+        "wahrscheinlichkeit": 0.45,
+        "abkuehlung": 0,
+        "ferien": "nur",
+        "proTeam": true
+      },
+      "beteiligte": [
+        {
+          "rolle": "team",
+          "art": "team",
+          "auswahl": "ferienLuecke"
+        },
+        {
+          "rolle": "trainer",
+          "art": "trainer",
+          "auswahl": "imTeam",
+          "aus": "team"
+        },
+        {
+          "rolle": "anderesTeam",
+          "art": "team",
+          "auswahl": "nachbarstufe",
+          "aus": "team",
+          "optional": true
+        }
+      ],
+      "optionen": [
+        {
+          "id": "normal",
+          "text": "Normal durchführen",
+          "effekte": [
+            {
+              "typ": "zufriedenheit",
+              "ziel": "teamKinder",
+              "wert": 1
+            }
+          ],
+          "folge": "Die Anwesenden haben viel Platz und Aufmerksamkeit. Für ein richtiges Spiel waren es zu wenige."
+        },
+        {
+          "id": "zusammenlegen",
+          "text": "Mit {anderesTeam} zusammenlegen",
+          "benoetigt": [
+            "anderesTeam"
+          ],
+          "effekte": [
+            {
+              "typ": "training",
+              "ziel": "team",
+              "aktion": "zusammenlegen"
+            }
+          ],
+          "folge": "Gemeinsames Training mit {anderesTeam}. Die Kleineren hatten es nicht immer leicht."
+        },
+        {
+          "id": "kleingruppe",
+          "text": "Kleingruppen-Event: Techniktag mit Pumptrack (CHF 120)",
+          "effekte": [
+            {
+              "typ": "training",
+              "ziel": "team",
+              "aktion": "kleingruppe"
+            },
+            {
+              "typ": "kasse",
+              "wert": -120,
+              "text": "Kleingruppen-Event"
+            },
+            {
+              "typ": "trainerBelastung",
+              "ziel": "trainer",
+              "wert": 6
+            },
+            {
+              "typ": "motivation",
+              "ziel": "teamKinder",
+              "wert": 1
+            }
+          ],
+          "folge": "Der Techniktag kommt super an. Die Kinder erzählen zu Hause davon."
+        },
+        {
+          "id": "absagen",
+          "text": "Training absagen",
+          "effekte": [
+            {
+              "typ": "training",
+              "ziel": "team",
+              "aktion": "absagen"
+            },
+            {
+              "typ": "elternStimmung",
+              "ziel": "teamEltern",
+              "wert": -2
+            }
+          ],
+          "folge": "Das Training fällt aus. Wer da gewesen wäre, ist enttäuscht."
+        }
+      ],
+      "standardOption": "absagen"
+    },
+    {
+      "id": "eltern_spielzeit",
+      "titel": "Beschwerde über Einsatzzeit",
+      "absender": "{elternteil}",
+      "kategorie": "konflikt",
+      "text": "{elternteil} beschwert sich lautstark: {kind.vorname} spiele bei {team} viel zu wenig. «So verliert mein Kind die Lust!»",
+      "pflicht": true,
+      "ausloeser": {
+        "wahrscheinlichkeit": 0.1,
+        "abkuehlung": 5,
+        "phasen": [
+          "meisterschaft",
+          "playoffs",
+          "abschluss"
+        ],
+        "modifikatoren": [
+          {
+            "typ": "teamFlag",
+            "rolle": "team",
+            "flag": "einsatzregeln",
+            "faktor": 0.35
+          }
+        ]
+      },
+      "beteiligte": [
+        {
+          "rolle": "team",
+          "art": "team",
+          "auswahl": "wettkampfteam"
+        },
+        {
+          "rolle": "kind",
+          "art": "kind",
+          "auswahl": "mitElternTyp:ehrgeizig",
+          "aus": "team"
+        },
+        {
+          "rolle": "elternteil",
+          "art": "elternteil",
+          "auswahl": "vonKindTyp:ehrgeizig",
+          "aus": "kind"
+        }
+      ],
+      "optionen": [
+        {
+          "id": "nachgeben",
+          "text": "Nachgeben: {kind.vorname} bekommt mehr Einsatzzeit",
+          "effekte": [
+            {
+              "typ": "zufriedenheit",
+              "ziel": "familieKinder",
+              "wert": 6
+            },
+            {
+              "typ": "elternStimmung",
+              "ziel": "elternteil",
+              "wert": 12
+            },
+            {
+              "typ": "zufriedenheit",
+              "ziel": "andereKinderImTeam",
+              "wert": -3
+            },
+            {
+              "typ": "elternStimmung",
+              "ziel": "andereElternImTeam",
+              "wert": -5
+            }
+          ],
+          "folge": "{elternteil.vorname} ist zufrieden. Andere Familien merken die Bevorzugung und sind verstimmt."
+        },
+        {
+          "id": "regeln",
+          "text": "Einsatzregeln der Stufe transparent erklären",
+          "effekte": [
+            {
+              "typ": "teamFlag",
+              "ziel": "team",
+              "flag": "einsatzregeln",
+              "wert": true
+            },
+            {
+              "typ": "elternStimmung",
+              "ziel": "elternteil",
+              "wert": -2
+            },
+            {
+              "typ": "elternStimmung",
+              "ziel": "andereElternImTeam",
+              "wert": 3
+            }
+          ],
+          "folge": "Du erklärst die Einsatzregeln im Elternchat. {elternteil.vorname} murrt, die meisten Eltern schätzen die Klarheit. Solche Beschwerden werden seltener."
+        },
+        {
+          "id": "abblocken",
+          "text": "Abblocken: Der Trainer entscheidet",
+          "effekte": [
+            {
+              "typ": "elternStimmung",
+              "ziel": "elternteil",
+              "wert": -15
+            },
+            {
+              "typ": "zufriedenheit",
+              "ziel": "kind",
+              "wert": -4
+            },
+            {
+              "typ": "zufall",
+              "wahrscheinlichkeit": 0.3,
+              "text": "Die Familie denkt laut über einen Vereinswechsel nach.",
+              "dann": [
+                {
+                  "typ": "austrittsRisiko",
+                  "ziel": "familieKinder",
+                  "wert": 0.25
+                }
+              ],
+              "sonst": []
+            }
+          ],
+          "folge": "{elternteil.vorname} ist verärgert."
+        }
+      ],
+      "standardOption": "abblocken"
+    },
+    {
+      "id": "material_kaputt",
+      "titel": "Material kaputt",
+      "absender": "{trainer}",
+      "kategorie": "alltag",
+      "text": "Bei {team} sind mehrere Leihstöcke gebrochen und die Bälle sind abgenutzt. {trainer.vorname} fragt, was zu tun ist.",
+      "pflicht": false,
+      "ausloeser": {
+        "wahrscheinlichkeit": 0.05,
+        "abkuehlung": 8,
+        "modifikatoren": [
+          {
+            "typ": "materialNiveau",
+            "niveau": "tief",
+            "faktor": 2.5
+          },
+          {
+            "typ": "materialNiveau",
+            "niveau": "hoch",
+            "faktor": 0.3
+          }
+        ]
+      },
+      "beteiligte": [
+        {
+          "rolle": "team",
+          "art": "team",
+          "auswahl": "beliebig"
+        },
+        {
+          "rolle": "trainer",
+          "art": "trainer",
+          "auswahl": "imTeam",
+          "aus": "team"
+        }
+      ],
+      "optionen": [
+        {
+          "id": "kaufen",
+          "text": "Neues Material kaufen (CHF 350)",
+          "effekte": [
+            {
+              "typ": "kasse",
+              "wert": -350,
+              "text": "Ersatzmaterial"
+            },
+            {
+              "typ": "zufriedenheit",
+              "ziel": "teamKinder",
+              "wert": 2
+            }
+          ],
+          "folge": "Neue Stöcke! Die Kinder freuen sich."
+        },
+        {
+          "id": "flicken",
+          "text": "Flicken und Restbestände verteilen (CHF 60)",
+          "effekte": [
+            {
+              "typ": "kasse",
+              "wert": -60,
+              "text": "Material flicken"
+            },
+            {
+              "typ": "trainerBelastung",
+              "ziel": "trainer",
+              "wert": 4
+            }
+          ],
+          "folge": "{trainer.vorname} flickt einen Abend lang Stöcke. Es reicht vorerst."
+        },
+        {
+          "id": "nichts",
+          "text": "Nichts unternehmen",
+          "effekte": [
+            {
+              "typ": "zufriedenheit",
+              "ziel": "teamKinder",
+              "wert": -3
+            }
+          ],
+          "folge": "Einige Kinder müssen sich Stöcke teilen."
+        }
+      ],
+      "standardOption": "nichts"
+    },
+    {
+      "id": "transport_fehlt",
+      "titel": "Transport fehlt",
+      "absender": "{trainer}",
+      "kategorie": "alltag",
+      "text": "{kind.vorname} von {team} hat für das nächste Turnier keine Fahrgelegenheit. Die Eltern sind nicht erreichbar.",
+      "pflicht": false,
+      "ausloeser": {
+        "wahrscheinlichkeit": 0.12,
+        "abkuehlung": 4,
+        "phasen": [
+          "meisterschaft",
+          "playoffs",
+          "abschluss"
+        ]
+      },
+      "beteiligte": [
+        {
+          "rolle": "team",
+          "art": "team",
+          "auswahl": "wettkampfteam"
+        },
+        {
+          "rolle": "kind",
+          "art": "kind",
+          "auswahl": "mitElternTyp:abwesend",
+          "aus": "team"
+        },
+        {
+          "rolle": "trainer",
+          "art": "trainer",
+          "auswahl": "imTeam",
+          "aus": "team"
+        }
+      ],
+      "optionen": [
+        {
+          "id": "fahrgemeinschaft",
+          "text": "Fahrgemeinschaft im Elternchat organisieren",
+          "effekte": [
+            {
+              "typ": "zufriedenheit",
+              "ziel": "kind",
+              "wert": 4
+            },
+            {
+              "typ": "elternStimmung",
+              "ziel": "teamEltern",
+              "wert": 1
+            }
+          ],
+          "folge": "Eine andere Familie nimmt {kind.vorname} mit. Das stärkt den Zusammenhalt."
+        },
+        {
+          "id": "trainer_faehrt",
+          "text": "{trainer.vorname} holt {kind.vorname} ab",
+          "effekte": [
+            {
+              "typ": "zufriedenheit",
+              "ziel": "kind",
+              "wert": 5
+            },
+            {
+              "typ": "trainerBelastung",
+              "ziel": "trainer",
+              "wert": 6
+            }
+          ],
+          "folge": "{trainer.vorname} macht einen Umweg. Hinweis für später: Fahrten allein mit einem Kind sind heikel – Vier-Augen-Prinzip."
+        },
+        {
+          "id": "zuhause",
+          "text": "{kind.vorname} bleibt zu Hause",
+          "effekte": [
+            {
+              "typ": "zufriedenheit",
+              "ziel": "kind",
+              "wert": -8
+            },
+            {
+              "typ": "motivation",
+              "ziel": "kind",
+              "wert": -2
+            }
+          ],
+          "folge": "{kind.vorname} verpasst das Turnier und ist traurig."
+        }
+      ],
+      "standardOption": "zuhause"
+    },
+    {
+      "id": "schulsport",
+      "titel": "Einladung zum Schulsportnachmittag",
+      "absender": "Schulleitung",
+      "kategorie": "chance",
+      "text": "Die Schule lädt den Verein ein, an einem Sportnachmittag Streethockey zu zeigen. Dafür bräuchte es eine Trainerin oder einen Trainer, z.B. {trainer}.",
+      "pflicht": false,
+      "ausloeser": {
+        "wahrscheinlichkeit": 0.04,
+        "abkuehlung": 12,
+        "ferien": "nie",
+        "phasen": [
+          "trainingsstart",
+          "meisterschaft",
+          "playoffs"
+        ]
+      },
+      "beteiligte": [
+        {
+          "rolle": "trainer",
+          "art": "trainer",
+          "auswahl": "beliebig"
+        }
+      ],
+      "optionen": [
+        {
+          "id": "ja",
+          "text": "Zusagen und {trainer.vorname} schicken",
+          "effekte": [
+            {
+              "typ": "trainerBelastung",
+              "ziel": "trainer",
+              "wert": 10
+            },
+            {
+              "typ": "schnupperKinder",
+              "anzahl": [
+                2,
+                5
+              ],
+              "alter": [
+                7,
+                12
+              ]
+            },
+            {
+              "typ": "ruf",
+              "wert": 2
+            }
+          ],
+          "folge": "Der Nachmittag war ein Erfolg. Mehrere Kinder wollen schnuppern kommen."
+        },
+        {
+          "id": "nein",
+          "text": "Absagen, gerade zu viel los",
+          "effekte": [],
+          "folge": "Schade, aber verständlich."
+        }
+      ],
+      "standardOption": "nein"
+    },
+    {
+      "id": "talent_zuzug",
+      "titel": "Familie zieht zu",
+      "absender": "Familie per E-Mail",
+      "kategorie": "chance",
+      "text": "Eine Familie ist neu in die Gemeinde gezogen. Ihr Kind hat im alten Verein Streethockey gespielt und sucht ein Team.",
+      "pflicht": false,
+      "ausloeser": {
+        "wahrscheinlichkeit": 0.03,
+        "abkuehlung": 10
+      },
+      "beteiligte": [],
+      "optionen": [
+        {
+          "id": "willkommen",
+          "text": "Herzlich willkommen heissen und ins Probetraining einladen",
+          "effekte": [
+            {
+              "typ": "neuesKind",
+              "alter": [
+                8,
+                16
+              ],
+              "talent": [
+                12,
+                18
+              ]
+            }
+          ],
+          "folge": "Das Kind kommt ins Training und fügt sich schnell ein."
+        },
+        {
+          "id": "warteliste",
+          "text": "Auf später vertrösten",
+          "effekte": [],
+          "folge": "Die Familie meldet sich nicht mehr."
+        }
+      ],
+      "standardOption": "warteliste"
+    },
+    {
+      "id": "trainer_streit",
+      "titel": "Streit im Trainerteam",
+      "absender": "{trainer}",
+      "kategorie": "konflikt",
+      "text": "{trainer.vorname} und {trainer2.vorname} sind sich bei {team} uneinig, wie trainiert werden soll. Die Kinder merken die Spannung.",
+      "pflicht": false,
+      "ausloeser": {
+        "wahrscheinlichkeit": 0.05,
+        "abkuehlung": 8
+      },
+      "beteiligte": [
+        {
+          "rolle": "team",
+          "art": "team",
+          "auswahl": "mitZweiTrainern"
+        },
+        {
+          "rolle": "trainer",
+          "art": "trainer",
+          "auswahl": "imTeam",
+          "aus": "team"
+        },
+        {
+          "rolle": "trainer2",
+          "art": "trainer",
+          "auswahl": "zweiterImTeam",
+          "aus": "team"
+        }
+      ],
+      "optionen": [
+        {
+          "id": "gespraech",
+          "text": "Gemeinsames Gespräch führen und Rollen klären",
+          "effekte": [
+            {
+              "typ": "beziehung",
+              "von": "trainer",
+              "zu": "trainer2",
+              "wert": 20
+            },
+            {
+              "typ": "trainerMotivation",
+              "ziel": "trainer",
+              "wert": 1
+            },
+            {
+              "typ": "trainerMotivation",
+              "ziel": "trainer2",
+              "wert": 1
+            }
+          ],
+          "folge": "Das Gespräch klärt die Rollen. Die beiden ziehen wieder am selben Strick."
+        },
+        {
+          "id": "entscheiden",
+          "text": "Du entscheidest zugunsten von {trainer.vorname}",
+          "effekte": [
+            {
+              "typ": "trainerMotivation",
+              "ziel": "trainer2",
+              "wert": -3
+            },
+            {
+              "typ": "beziehung",
+              "von": "trainer",
+              "zu": "trainer2",
+              "wert": -10
+            }
+          ],
+          "folge": "{trainer2.vorname} fühlt sich übergangen."
+        },
+        {
+          "id": "ignorieren",
+          "text": "Sich selbst überlassen",
+          "effekte": [
+            {
+              "typ": "zufriedenheit",
+              "ziel": "teamKinder",
+              "wert": -3
+            },
+            {
+              "typ": "beziehung",
+              "von": "trainer",
+              "zu": "trainer2",
+              "wert": -20
+            }
+          ],
+          "folge": "Die Stimmung im Trainerteam bleibt angespannt."
+        }
+      ],
+      "standardOption": "ignorieren"
+    },
+    {
+      "id": "pruefungsstress",
+      "titel": "Prüfungsstress",
+      "absender": "{elternteil}",
+      "kategorie": "menschliches",
+      "text": "{kind.vorname} ({team}) steckt mitten in Prüfungen und fühlt sich überfordert. {elternteil.vorname} fragt, ob eine Trainingspause möglich ist.",
+      "pflicht": false,
+      "ausloeser": {
+        "wahrscheinlichkeit": 0.06,
+        "abkuehlung": 6,
+        "ferien": "nie"
+      },
+      "beteiligte": [
+        {
+          "rolle": "team",
+          "art": "team",
+          "auswahl": "stufe:U15,U18"
+        },
+        {
+          "rolle": "kind",
+          "art": "kind",
+          "auswahl": "imTeam",
+          "aus": "team"
+        },
+        {
+          "rolle": "elternteil",
+          "art": "elternteil",
+          "auswahl": "vonKind",
+          "aus": "kind"
+        }
+      ],
+      "optionen": [
+        {
+          "id": "pause",
+          "text": "Pause gewähren, Schule geht vor",
+          "effekte": [
+            {
+              "typ": "zufriedenheit",
+              "ziel": "kind",
+              "wert": 6
+            },
+            {
+              "typ": "elternStimmung",
+              "ziel": "elternteil",
+              "wert": 8
+            }
+          ],
+          "folge": "{kind.vorname} ist erleichtert und kommt nach den Prüfungen motiviert zurück."
+        },
+        {
+          "id": "reduziert",
+          "text": "Einmal pro Woche kommen, ohne Druck",
+          "effekte": [
+            {
+              "typ": "zufriedenheit",
+              "ziel": "kind",
+              "wert": 3
+            },
+            {
+              "typ": "elternStimmung",
+              "ziel": "elternteil",
+              "wert": 4
+            }
+          ],
+          "folge": "Ein guter Kompromiss."
+        },
+        {
+          "id": "draengen",
+          "text": "Auf Trainingspflicht bestehen",
+          "effekte": [
+            {
+              "typ": "zufriedenheit",
+              "ziel": "kind",
+              "wert": -8
+            },
+            {
+              "typ": "elternStimmung",
+              "ziel": "elternteil",
+              "wert": -10
+            },
+            {
+              "typ": "austrittsRisiko",
+              "ziel": "kind",
+              "wert": 0.1
+            }
+          ],
+          "folge": "{kind.vorname} fühlt sich unter Druck gesetzt."
+        }
+      ],
+      "standardOption": "reduziert"
+    },
+    {
+      "id": "verletzung",
+      "titel": "Verletzung im Training",
+      "absender": "{trainer}",
+      "kategorie": "menschliches",
+      "text": "{kind.vorname} hat sich bei {team} im Training am Knöchel verletzt. Nichts Schlimmes, aber die Eltern sind beunruhigt.",
+      "pflicht": false,
+      "ausloeser": {
+        "wahrscheinlichkeit": 0.05,
+        "abkuehlung": 5,
+        "modifikatoren": [
+          {
+            "typ": "schwerpunkt",
+            "rolle": "team",
+            "schwerpunkt": "kondition",
+            "faktor": 2
+          }
+        ]
+      },
+      "beteiligte": [
+        {
+          "rolle": "team",
+          "art": "team",
+          "auswahl": "mitTraining"
+        },
+        {
+          "rolle": "kind",
+          "art": "kind",
+          "auswahl": "imTeam",
+          "aus": "team"
+        },
+        {
+          "rolle": "trainer",
+          "art": "trainer",
+          "auswahl": "imTeam",
+          "aus": "team"
+        },
+        {
+          "rolle": "elternteil",
+          "art": "elternteil",
+          "auswahl": "vonKind",
+          "aus": "kind"
+        }
+      ],
+      "optionen": [
+        {
+          "id": "begleiten",
+          "text": "Eltern anrufen, Verlauf erklären, nach ein paar Tagen nachfragen",
+          "effekte": [
+            {
+              "typ": "elternStimmung",
+              "ziel": "elternteil",
+              "wert": 6
+            },
+            {
+              "typ": "zufriedenheit",
+              "ziel": "kind",
+              "wert": 1
+            }
+          ],
+          "folge": "Die Familie schätzt die Sorgfalt."
+        },
+        {
+          "id": "herunterspielen",
+          "text": "Herunterspielen: «Passiert halt im Sport»",
+          "effekte": [
+            {
+              "typ": "elternStimmung",
+              "ziel": "elternteil",
+              "wert": -8
+            },
+            {
+              "typ": "zufriedenheit",
+              "ziel": "kind",
+              "wert": -4
+            }
+          ],
+          "folge": "Die Eltern fühlen sich nicht ernst genommen."
+        }
+      ],
+      "standardOption": "herunterspielen"
+    },
+    {
+      "id": "trainer_ueberlastet",
+      "titel": "Trainer:in am Anschlag",
+      "absender": "{trainer}",
+      "kategorie": "konflikt",
+      "text": "{trainer} wirkt erschöpft und deutet an, dass es so nicht weitergehen kann.",
+      "pflicht": false,
+      "ausloeser": {
+        "wahrscheinlichkeit": 0.35,
+        "abkuehlung": 6
+      },
+      "beteiligte": [
+        {
+          "rolle": "trainer",
+          "art": "trainer",
+          "auswahl": "belastet"
+        }
+      ],
+      "optionen": [
+        {
+          "id": "entlasten",
+          "text": "Pause verordnen: eine Woche ohne Training",
+          "effekte": [
+            {
+              "typ": "trainerBelastung",
+              "ziel": "trainer",
+              "wert": -30
+            },
+            {
+              "typ": "trainerMotivation",
+              "ziel": "trainer",
+              "wert": 2
+            }
+          ],
+          "folge": "{trainer.vorname} tankt auf. Prüfe die Zuteilung: weniger Teams oder mehr Unterstützung."
+        },
+        {
+          "id": "dankeschoen",
+          "text": "Ein Dankeschön mit Gutschein (CHF 80)",
+          "effekte": [
+            {
+              "typ": "kasse",
+              "wert": -80,
+              "text": "Dankeschön Trainer"
+            },
+            {
+              "typ": "trainerMotivation",
+              "ziel": "trainer",
+              "wert": 3
+            },
+            {
+              "typ": "trainerBelastung",
+              "ziel": "trainer",
+              "wert": -8
+            }
+          ],
+          "folge": "{trainer.vorname} freut sich über die Wertschätzung."
+        },
+        {
+          "id": "nichts",
+          "text": "Durchhalteparolen",
+          "effekte": [
+            {
+              "typ": "trainerMotivation",
+              "ziel": "trainer",
+              "wert": -3
+            }
+          ],
+          "folge": "{trainer.vorname} fühlt sich allein gelassen."
+        }
+      ],
+      "standardOption": "nichts"
+    },
+    {
+      "id": "elternhilfe",
+      "titel": "Elternteil bietet Hilfe an",
+      "absender": "{elternteil}",
+      "kategorie": "chance",
+      "text": "{elternteil} (Elternteil von {kind.vorname}) würde gern bei {team} mithelfen.",
+      "pflicht": false,
+      "ausloeser": {
+        "wahrscheinlichkeit": 0.05,
+        "abkuehlung": 8
+      },
+      "beteiligte": [
+        {
+          "rolle": "elternteil",
+          "art": "elternteil",
+          "auswahl": "typ:potenziellerTrainer"
+        },
+        {
+          "rolle": "kind",
+          "art": "kind",
+          "auswahl": "vonElternteil",
+          "aus": "elternteil"
+        },
+        {
+          "rolle": "team",
+          "art": "team",
+          "auswahl": "vonKind",
+          "aus": "kind"
+        }
+      ],
+      "optionen": [
+        {
+          "id": "betreuer",
+          "text": "Als Betreuer:in ins Team aufnehmen",
+          "benoetigtPlatz": "team",
+          "effekte": [
+            {
+              "typ": "elternZuTrainer",
+              "ziel": "elternteil",
+              "team": "team",
+              "rolle": "betreuer"
+            },
+            {
+              "typ": "elternStimmung",
+              "ziel": "elternteil",
+              "wert": 10
+            }
+          ],
+          "folge": "{elternteil.vorname} ist neu Betreuer:in bei {team}. Achte auf mögliche Interessenkonflikte beim eigenen Kind."
+        },
+        {
+          "id": "anlaesse",
+          "text": "Lieber bei Anlässen helfen lassen",
+          "effekte": [
+            {
+              "typ": "elternStimmung",
+              "ziel": "elternteil",
+              "wert": 4
+            },
+            {
+              "typ": "ruf",
+              "wert": 1
+            }
+          ],
+          "folge": "Eine wertvolle Hilfe für künftige Anlässe."
+        },
+        {
+          "id": "ablehnen",
+          "text": "Freundlich ablehnen",
+          "effekte": [
+            {
+              "typ": "elternStimmung",
+              "ziel": "elternteil",
+              "wert": -4
+            }
+          ],
+          "folge": "{elternteil.vorname} ist etwas enttäuscht."
+        }
+      ],
+      "standardOption": "anlaesse"
+    },
+    {
+      "id": "sprache_buddy",
+      "titel": "Neues Kind versteht wenig",
+      "absender": "{trainer}",
+      "kategorie": "menschliches",
+      "text": "{kind.vorname} bei {team} spricht noch wenig Deutsch und steht in den Pausen oft allein. {trainer.vorname} fragt, was wir tun können.",
+      "pflicht": false,
+      "ausloeser": {
+        "wahrscheinlichkeit": 0.15,
+        "abkuehlung": 8
+      },
+      "beteiligte": [
+        {
+          "rolle": "kind",
+          "art": "kind",
+          "auswahl": "mitZugOhneFlag:neuzuzug_sprache:buddy"
+        },
+        {
+          "rolle": "team",
+          "art": "team",
+          "auswahl": "vonKind",
+          "aus": "kind"
+        },
+        {
+          "rolle": "trainer",
+          "art": "trainer",
+          "auswahl": "imTeam",
+          "aus": "team"
+        }
+      ],
+      "optionen": [
+        {
+          "id": "buddy",
+          "text": "Ein Gotti/Götti aus dem Team zur Seite stellen",
+          "effekte": [
+            {
+              "typ": "kindFlag",
+              "ziel": "kind",
+              "flag": "buddy",
+              "wert": true
+            },
+            {
+              "typ": "zufriedenheit",
+              "ziel": "kind",
+              "wert": 8
+            },
+            {
+              "typ": "zufriedenheit",
+              "ziel": "teamKinder",
+              "wert": 1
+            }
+          ],
+          "folge": "{kind.vorname} hat jetzt jemanden, der hilft und übersetzt. Das Lachen kommt zurück."
+        },
+        {
+          "id": "bildkarten",
+          "text": "Übungen mit Bildkarten und Vorzeigen erklären",
+          "effekte": [
+            {
+              "typ": "zufriedenheit",
+              "ziel": "kind",
+              "wert": 4
+            },
+            {
+              "typ": "trainerBelastung",
+              "ziel": "trainer",
+              "wert": 3
+            }
+          ],
+          "folge": "Das hilft allen Kindern – Vorzeigen wirkt mehr als Erklären."
+        },
+        {
+          "id": "abwarten",
+          "text": "Abwarten, das kommt schon",
+          "effekte": [
+            {
+              "typ": "zufriedenheit",
+              "ziel": "kind",
+              "wert": -4
+            }
+          ],
+          "folge": "{kind.vorname} bleibt aussen vor."
+        }
+      ],
+      "standardOption": "abwarten"
+    },
+    {
+      "id": "haertefall_anfrage",
+      "titel": "Anfrage wegen Mitgliederbeitrag",
+      "absender": "{elternteil}",
+      "kategorie": "menschliches",
+      "text": "{elternteil} schreibt vertraulich: Der Beitrag für {kind.vorname} sei im Moment kaum zu stemmen. Ob es eine Lösung gebe?",
+      "pflicht": false,
+      "ausloeser": {
+        "wahrscheinlichkeit": 0.06,
+        "abkuehlung": 6
+      },
+      "beteiligte": [
+        {
+          "rolle": "kind",
+          "art": "kind",
+          "auswahl": "tiefesEinkommen"
+        },
+        {
+          "rolle": "elternteil",
+          "art": "elternteil",
+          "auswahl": "vonKind",
+          "aus": "kind"
+        }
+      ],
+      "optionen": [
+        {
+          "id": "haertefall",
+          "text": "Diskret als Härtefall aufnehmen (Beitrag reduziert)",
+          "effekte": [
+            {
+              "typ": "familieHaertefall",
+              "ziel": "kind"
+            },
+            {
+              "typ": "elternStimmung",
+              "ziel": "elternteil",
+              "wert": 15
+            },
+            {
+              "typ": "zufriedenheit",
+              "ziel": "familieKinder",
+              "wert": 4
+            }
+          ],
+          "folge": "Die Familie ist sehr dankbar. {kind.vorname} kann weiter spielen."
+        },
+        {
+          "id": "raten",
+          "text": "Ratenzahlung anbieten",
+          "effekte": [
+            {
+              "typ": "elternStimmung",
+              "ziel": "elternteil",
+              "wert": 5
+            }
+          ],
+          "folge": "Eine Entlastung, aber das Problem bleibt."
+        },
+        {
+          "id": "ablehnen",
+          "text": "Regeln sind Regeln",
+          "effekte": [
+            {
+              "typ": "elternStimmung",
+              "ziel": "elternteil",
+              "wert": -12
+            },
+            {
+              "typ": "austrittsRisiko",
+              "ziel": "familieKinder",
+              "wert": 0.3
+            }
+          ],
+          "folge": "Die Familie überlegt sich den Austritt."
+        }
+      ],
+      "standardOption": "raten"
+    }
+  ]
+}
