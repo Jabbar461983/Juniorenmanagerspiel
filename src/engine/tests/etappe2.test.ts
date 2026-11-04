@@ -255,3 +255,25 @@ describe('Determinismus mit Etappe 2', () => {
     expect(Object.values(a.eltern).some((e) => e.gespraeche.length > 0)).toBe(true);
   });
 });
+
+describe('Dialogtexte', () => {
+  it('in allen verfügbaren Gesprächen bleiben keine Platzhalter stehen', () => {
+    const s = simuliereWochen(testSpiel(31), 20);
+    const personen = [...Object.values(s.eltern), ...Object.values(s.kinder), ...Object.values(s.trainer)];
+    let geprueft = 0;
+    for (const p of personen) {
+      for (const { dialog } of verfuegbareDialoge(s, p.id)) {
+        // alle Pfade mit der jeweils ersten möglichen Antwort und alle Antworten der ersten Ebene prüfen
+        const start = dialogAuswerten(s, dialog.id, p.id, []);
+        const texte = [start.frage ?? '', ...start.antworten.map((a) => a.text)];
+        for (const a of start.antworten.filter((x) => x.moeglich)) {
+          const z = dialogAuswerten(s, dialog.id, p.id, [a.id]);
+          texte.push(z.frage ?? '', z.endText ?? '', ...z.antworten.map((x) => x.text));
+        }
+        for (const t of texte) expect(t, `${dialog.id} mit ${p.vorname}`).not.toMatch(/\{[a-zA-Z.]+\}/);
+        geprueft++;
+      }
+    }
+    expect(geprueft).toBeGreaterThan(50);
+  });
+});

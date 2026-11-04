@@ -7,6 +7,11 @@
       "art": "elternteil",
       "beschreibung": "Ein lockeres Gespräch am Spielfeldrand. Mit genug Vertrauen erfährst du mehr über die Familie.",
       "manuell": true,
+      "bedingung": [
+        {
+          "typ": "hatTeam"
+        }
+      ],
       "start": "k1",
       "knoten": {
         "k1": {
@@ -700,6 +705,9 @@
         {
           "typ": "bekannt",
           "wert": "finanzielleSorgen"
+        },
+        {
+          "typ": "hatTeam"
         }
       ],
       "start": "k1",
@@ -1345,8 +1353,13 @@
             },
             {
               "id": "b",
-              "text": "Wie läuft es mit {team}? Was brauchst du?",
+              "text": "Wie läuft es mit deinem Team? Was brauchst du?",
               "ton": "sachlich",
+              "bedingung": [
+                {
+                  "typ": "hatTeam"
+                }
+              ],
               "weiter": "k4"
             },
             {
