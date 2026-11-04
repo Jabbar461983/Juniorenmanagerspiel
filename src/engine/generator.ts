@@ -62,7 +62,11 @@ export function erzeugeFamilie(state: GameState, rng: Rng, opt: FamilieOptionen 
     einkommen,
     kinderIds: [],
     elternIds: [],
-    haertefall: false
+    haertefall: false,
+    ausstand: 0,
+    saeumig: false,
+    ratenzahlung: false,
+    getrennt: false
   };
   state.familien[familie.id] = familie;
   const famTon = hautton(rng, h);
@@ -89,7 +93,13 @@ export function erzeugeFamilie(state: GameState, rng: Rng, opt: FamilieOptionen 
       zahlungsmoral: wert(rng, einkommen === 'tief' ? 10 : 15),
       einfluss: wert(rng, typ === 'sponsor' ? 15 : 8),
       stimmung: rng.int(55, 80),
-      familieId: familie.id
+      familieId: familie.id,
+      helfer: null,
+      helferTeamId: null,
+      auslastung: 0,
+      vertrauen: 0,
+      bekannt: rng.chance(B.eltern.typBekanntStart) ? ['typ'] : [],
+      gespraeche: []
     };
     e.portrait.gruppe = portraitGruppe(alter(state, e));
     state.eltern[e.id] = e;
@@ -97,9 +107,11 @@ export function erzeugeFamilie(state: GameState, rng: Rng, opt: FamilieOptionen 
   }
   // Partner kennen sich
   if (familie.elternIds.length === 2) {
+    familie.getrennt = rng.chance(B.eltern.getrenntWahrscheinlichkeit);
     const [a, b] = familie.elternIds as [string, string];
-    state.eltern[a]!.beziehungen.push({ zielId: b, art: 'familie', staerke: 70 });
-    state.eltern[b]!.beziehungen.push({ zielId: a, art: 'familie', staerke: 70 });
+    const staerke = familie.getrennt ? 10 : 70;
+    state.eltern[a]!.beziehungen.push({ zielId: b, art: 'familie', staerke });
+    state.eltern[b]!.beziehungen.push({ zielId: a, art: 'familie', staerke });
   }
   return familie;
 }
@@ -168,7 +180,10 @@ export function erzeugeKind(state: GameState, rng: Rng, familie: Familie, opt: K
     einsatzzeit: 0.7,
     fortschritt: 0.1,
     eintritt: { saison: state.saison, woche: state.woche },
-    flags: {}
+    flags: {},
+    vertrauen: 0,
+    bekannt: [],
+    gespraeche: []
   };
   // Geschwister-Beziehungen
   for (const gid of familie.kinderIds) {
@@ -259,7 +274,10 @@ export function erzeugeTrainer(state: GameState, rng: Rng, opt: TrainerOptionen 
     qualifikation: quali,
     quelle,
     status: 'aktiv',
-    absagenSaison: 0
+    absagenSaison: 0,
+    vertrauen: 0,
+    bekannt: [],
+    gespraeche: []
   };
   state.trainer[t.id] = t;
   return t;
@@ -287,7 +305,10 @@ export function trainerAusElternteil(state: GameState, rng: Rng, e: Elternteil):
     quelle: 'eltern',
     status: 'aktiv',
     elternteilId: e.id,
-    absagenSaison: 0
+    absagenSaison: 0,
+    vertrauen: e.vertrauen,
+    bekannt: [],
+    gespraeche: []
   };
   state.trainer[t.id] = t;
   return t;

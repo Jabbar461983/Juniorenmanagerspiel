@@ -4,8 +4,11 @@ import { aktuelleWoche } from './kalender';
 import { alter, name, stufeFuerAlter, teamKinder, teamsDerStufe } from './personen';
 import type { Entscheid, GameState, Stufe, Team } from './types';
 import { STUFEN, TRAINER_ROLLEN } from './types';
-import { loeseEreignis, type EffektKontext } from './ereignisse';
-import type { Rng } from './rng';
+import { loeseEreignis, wendeEffekteAn, type EffektKontext } from './ereignisse';
+import { dialogAbkuehlungAktiv, dialogAuswerten, personVon } from './dialoge';
+import { elternabend } from './eltern';
+import { offenbare } from './infos';
+import { Rng } from './rng';
 import { neueId } from './util';
 import { buchen } from './finanzen';
 
@@ -52,7 +55,8 @@ export function neuesTeam(state: GameState, stufe: Stufe, name?: string, halle?:
     halle: halle ?? HALLEN[STUFEN.indexOf(stufe) % HALLEN.length]!,
     absagenInFolge: 0,
     absagenSaison: 0,
-    flags: {}
+    flags: {},
+    elternabende: 0
   };
   state.teams[t.id] = t;
   return t;
@@ -77,6 +81,8 @@ export function wendeEntscheideAn(
 ): EntscheidErgebnis {
   const fehler: string[] = [];
   const anwerbungen: AnwerbungAuftrag[] = [];
+  let gespraeche = 0;
+  const gespraechMitPerson = new Set<string>();
 
   for (const e of entscheide) {
     switch (e.typ) {
@@ -216,6 +222,79 @@ export function wendeEntscheideAn(
       case 'entschaedigung':
         state.finanzen.entschaedigung = e.niveau;
         break;
+      case 'dialog': {
+        const p = personVon(state, e.personId);
+        if (!p) {
+          fehler.push('Gesprächspartner:in nicht gefunden.');
+          break;
+        }
+        if (!e.ereignisId) {
+          if (gespraeche >= B.dialog.gespraecheProWoche) {
+            fehler.push(`Pro Woche sind höchstens ${B.dialog.gespraecheProWoche} Gespräche möglich.`);
+            break;
+          }
+          if (gespraechMitPerson.has(p.id)) {
+            fehler.push(`Mit ${name(p)} ist diese Woche schon ein Gespräch geplant.`);
+            break;
+          }
+          if (dialogAbkuehlungAktiv(state, p, e.dialogId)) {
+            fehler.push(`Dieses Gespräch mit ${name(p)} fand erst kürzlich statt.`);
+            break;
+          }
+        }
+        const inst = e.ereignisId ? state.ereignisse.find((x) => x.id === e.ereignisId) : undefined;
+        let z;
+        try {
+          z = dialogAuswerten(state, e.dialogId, e.personId, e.antworten, inst?.beteiligte ?? {});
+        } catch (err) {
+          fehler.push((err as Error).message);
+          break;
+        }
+        if (z.fehler || !z.beendet) {
+          fehler.push(z.fehler ?? `Das Gespräch «${z.dialog.titel}» wurde nicht abgeschlossen.`);
+          break;
+        }
+        if (!e.ereignisId) gespraeche++;
+        gespraechMitPerson.add(p.id);
+        const delta = z.vertrauen - p.vertrauen;
+        p.vertrauen = z.vertrauen;
+        for (const info of z.offenbart) offenbare(p, info);
+        if (p.rolle === 'elternteil') p.stimmung = Math.max(0, Math.min(100, p.stimmung + delta / 2));
+        p.gespraeche.push({
+          saison: state.saison,
+          woche: state.woche,
+          dialogId: e.dialogId,
+          titel: z.dialog.titel,
+          ergebnis: z.endText ?? '',
+          vertrauensAenderung: Math.round(delta * 10) / 10
+        });
+        const r = rng ?? new Rng(state.rngState);
+        const ctx = ereignisKontext ?? { buchungen: [], meldungen: [], schnupper: [] };
+        wendeEffekteAn(state, r, z.effekte, z.beteiligte, ctx);
+        break;
+      }
+      case 'elternabend': {
+        const team = state.teams[e.teamId];
+        if (!team) {
+          fehler.push('Team nicht gefunden.');
+          break;
+        }
+        if (team.elternabende >= B.eltern.elternabend.maxProSaison) {
+          fehler.push(`${team.name} hatte diese Saison schon ${B.eltern.elternabend.maxProSaison} Elternabende.`);
+          break;
+        }
+        const ctx = ereignisKontext ?? { buchungen: [], meldungen: [], schnupper: [] };
+        elternabend(state, team, aktuelleWoche(state), ctx.buchungen, ctx.meldungen);
+        break;
+      }
+      case 'helferBeenden': {
+        const el = state.eltern[e.elternteilId];
+        if (el) {
+          el.helfer = null;
+          el.helferTeamId = null;
+        }
+        break;
+      }
       case 'ereignis': {
         if (!rng || !ereignisKontext) break;
         const inst = state.ereignisse.find((x) => x.id === e.ereignisId);

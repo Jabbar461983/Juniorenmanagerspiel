@@ -1,6 +1,7 @@
 import {
   ANWERBUNG,
   B,
+  dialogDef,
   optionText,
   type Entscheid,
   aktiveKinder,
@@ -183,6 +184,16 @@ export function entscheidText(s: GameState, e: Entscheid): string {
     case 'ereignis': {
       const inst = s.ereignisse.find((x) => x.id === e.ereignisId);
       return inst ? `${inst.titel}: ${optionText(s, inst, e.optionId)}` : 'Ereignis';
+    }
+    case 'dialog': {
+      const p = s.kinder[e.personId] ?? s.eltern[e.personId] ?? s.trainer[e.personId];
+      return `Gespräch «${dialogDef(e.dialogId).titel}» mit ${p ? `${p.vorname} ${p.nachname}` : 'Person'}`;
+    }
+    case 'elternabend':
+      return `Elternabend ${team(e.teamId)}`;
+    case 'helferBeenden': {
+      const p = s.eltern[e.elternteilId];
+      return `${p ? `${p.vorname} ${p.nachname}` : 'Elternteil'} vom Helferdienst entlasten`;
     }
   }
 }

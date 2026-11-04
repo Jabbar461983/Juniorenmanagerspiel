@@ -95,7 +95,7 @@ export function zielFaktoren(state: GameState, k: Kind, ctx: TeamKontext | null)
     }
     trainerbeziehung -= ctx.werte.konflikt;
   }
-  trainerbeziehung += zugFaktor(k, 'trainerbeziehung');
+  trainerbeziehung += zugFaktor(k, 'trainerbeziehung') + k.vertrauen * B.eltern.vertrauenZufriedenheitFaktor;
 
   // Teamklima
   let teamklima = (ctx?.klima ?? 55) + zugFaktor(k, 'teamklima');
@@ -142,7 +142,7 @@ export function zielFaktoren(state: GameState, k: Kind, ctx: TeamKontext | null)
         const def = elternTyp(e!.typ);
         let basis = def.basis;
         if (def.einsatzAbhaengig) basis += def.einsatzAbhaengig * (k.einsatzzeit - 0.5) * 2;
-        return s + 0.5 * basis + 0.5 * e!.stimmung;
+        return s + 0.5 * basis + 0.5 * e!.stimmung + e!.vertrauen * B.eltern.vertrauenZufriedenheitFaktor;
       }, 0) / eltern.length;
   }
   elterneinfluss += zugFaktor(k, 'elterneinfluss');

@@ -119,6 +119,7 @@ export function saisonAbschliessen(state: GameState, rng: Rng): SaisonBilanz {
   for (const team of Object.values(state.teams)) {
     team.absagenSaison = 0;
     team.absagenInFolge = 0;
+    team.elternabende = 0;
   }
 
   state.wettkampf = leererWettkampf();

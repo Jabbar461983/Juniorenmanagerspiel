@@ -39,7 +39,25 @@ export interface PersonBasis {
   portrait: PortraitMeta;
   charakterzuege: string[];
   beziehungen: Beziehung[];
+  /** Vertrauen zur Spieler:in, −100 bis +100 (Etappe 2) */
+  vertrauen: number;
+  /** offenbarte verborgene Infos (Schlüssel aus dem Info-Katalog, z.B. 'typ', 'talent') */
+  bekannt: string[];
+  /** geführte Gespräche */
+  gespraeche: GespraechEintrag[];
 }
+
+export interface GespraechEintrag {
+  saison: number;
+  woche: number;
+  dialogId: string;
+  titel: string;
+  ergebnis: string;
+  vertrauensAenderung: number;
+}
+
+export type Ton = 'empathisch' | 'sachlich' | 'bestimmt' | 'ausweichend';
+export type HelferRolle = 'fahrdienst' | 'anlaesse';
 
 export interface KindWerte {
   /** verborgen */
@@ -107,6 +125,11 @@ export interface Elternteil extends PersonBasis {
   /** 0–100, Stimmung gegenüber dem Verein */
   stimmung: number;
   familieId: Id;
+  /** Helfer-Rolle (Etappe 2) */
+  helfer: HelferRolle | null;
+  helferTeamId: Id | null;
+  /** 0–100, Auslastung durch Helfereinsätze */
+  auslastung: number;
 }
 
 export type Qualifikation = 'keine' | 'leiter' | 'leiterWeiterbildung' | 'experte';
@@ -155,6 +178,13 @@ export interface Familie {
   kinderIds: Id[];
   elternIds: Id[];
   haertefall: boolean;
+  /** offene Beiträge in CHF (Etappe 2) */
+  ausstand: number;
+  /** zahlt zurzeit nicht */
+  saeumig: boolean;
+  ratenzahlung: boolean;
+  /** Eltern leben getrennt */
+  getrennt: boolean;
 }
 
 export type Schwerpunkt = 'spass' | 'technik' | 'kondition' | 'taktik' | 'spielformen';
@@ -179,6 +209,8 @@ export interface Team {
   absagenInFolge: number;
   absagenSaison: number;
   flags: Record<string, boolean>;
+  /** Anzahl Elternabende in der laufenden Saison (Etappe 2) */
+  elternabende: number;
 }
 
 export interface Buchung {
@@ -192,7 +224,8 @@ export interface Buchung {
     | 'anwerbung'
     | 'verbandsgebuehren'
     | 'vereinsbeitrag'
-    | 'ereignis';
+    | 'ereignis'
+    | 'elternarbeit';
   text: string;
   betrag: number;
 }
@@ -394,7 +427,10 @@ export type Entscheid =
   | { typ: 'haertefallfonds'; aktiv: boolean }
   | { typ: 'material'; niveau: Niveau }
   | { typ: 'entschaedigung'; niveau: Niveau }
-  | { typ: 'ereignis'; ereignisId: Id; optionId: string };
+  | { typ: 'ereignis'; ereignisId: Id; optionId: string }
+  | { typ: 'dialog'; dialogId: string; personId: Id; antworten: string[]; ereignisId?: Id }
+  | { typ: 'elternabend'; teamId: Id }
+  | { typ: 'helferBeenden'; elternteilId: Id };
 
 // ---------- Ergebnis einer Woche ----------
 

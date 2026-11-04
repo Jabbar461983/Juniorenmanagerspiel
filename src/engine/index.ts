@@ -4,7 +4,10 @@ export { simulateWeek, PflichtEreignisOffenError, SpielBeendetError } from './si
 export { neuesSpiel, type NeuesSpielOptionen } from './neuesSpiel';
 export { migriere, SCHEMA_VERSION, SpielstandFehler } from './migrations';
 export { vorschau, beitraegeAenderbar, teamGruendenMoeglich, anwerbungsKosten, STANDARD_PLAENE } from './entscheide';
-export { B, ANWERBUNG, FERIEN_REGION, KIND_ZUEGE, TRAINER_ZUEGE, ELTERN_TYPEN, ereignisVorlage, kindZug, trainerZug, elternTyp } from './config';
+export { B, ANWERBUNG, FERIEN_REGION, KIND_ZUEGE, TRAINER_ZUEGE, ELTERN_TYPEN, DIALOGE, ereignisVorlage, dialogDef, kindZug, trainerZug, elternTyp } from './config';
+export { dialogAuswerten, verfuegbareDialoge, helferBereitschaft, tonWirkung, personVon, type DialogZustand, type AntwortAnzeige } from './dialoge';
+export { infosVon, type Info } from './infos';
+export { teamEltern, teamHatFahrdienst, interessenkonflikte, ohneTransport } from './eltern';
 export * from './kalender';
 export * from './personen';
 export { berechneTeamWerte, ROLLEN_NAMEN, SKILL_NAMEN, SKILLS, schwerpunktVon } from './teamwert';

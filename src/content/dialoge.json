@@ -1,0 +1,1695 @@
+{
+  "_kommentar": "Dialogbäume (Etappe 2). Aufbau und Bedingungen: src/engine/dialoge.ts. Platzhalter: {rolle} = Name, {rolle.vorname}, {elternteil.ausstand}.",
+  "dialoge": [
+    {
+      "id": "eltern_kennenlernen",
+      "titel": "Kennenlernen",
+      "art": "elternteil",
+      "beschreibung": "Ein lockeres Gespräch am Spielfeldrand. Mit genug Vertrauen erfährst du mehr über die Familie.",
+      "manuell": true,
+      "start": "k1",
+      "knoten": {
+        "k1": {
+          "text": "{elternteil.vorname} steht am Rand des Trainings von {team}. «Ah, du bist neu für die Junioren zuständig?»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Ja! Wie erlebt {kind.vorname} das Training bisher?",
+              "ton": "empathisch",
+              "offenbart": [
+                "typ"
+              ],
+              "weiter": "k2"
+            },
+            {
+              "id": "b",
+              "text": "Genau. Ich wollte mich kurz vorstellen und fragen, ob alles klappt.",
+              "ton": "sachlich",
+              "weiter": "k2"
+            },
+            {
+              "id": "c",
+              "text": "Ich muss gleich weiter, aber schön, dich zu sehen.",
+              "ton": "ausweichend",
+              "ende": "{elternteil.vorname} nickt freundlich. Mehr ergibt sich heute nicht."
+            }
+          ]
+        },
+        "k2": {
+          "text": "«Eigentlich gut. Nur …» {elternteil.vorname} zögert.",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Nur? Erzähl ruhig, das bleibt unter uns.",
+              "ton": "empathisch",
+              "offenbart": [
+                "typ",
+                "finanzielleSorgen",
+                "getrennt",
+                "druckZuhause",
+                "schichtarbeit",
+                "trainerwunsch"
+              ],
+              "weiter": {
+                "vertrauenAb": 15,
+                "dann": "k3",
+                "sonst": "k4"
+              }
+            },
+            {
+              "id": "b",
+              "text": "Gibt es etwas Konkretes, das wir besser machen können?",
+              "ton": "sachlich",
+              "offenbart": [
+                "typ"
+              ],
+              "weiter": {
+                "vertrauenAb": 15,
+                "dann": "k3",
+                "sonst": "k4"
+              }
+            },
+            {
+              "id": "c",
+              "text": "Wenn etwas ist, sag es bitte direkt dem Trainerteam.",
+              "ton": "bestimmt",
+              "ende": "«Klar, mache ich.» Das Gespräch bleibt an der Oberfläche."
+            }
+          ]
+        },
+        "k3": {
+          "text": "«Weisst du, bei uns ist nicht immer alles einfach. Aber {kind.vorname} liebt Streethockey. Und falls ihr mal Hilfe braucht – sag Bescheid.»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Danke für dein Vertrauen. Melde dich jederzeit.",
+              "ton": "empathisch",
+              "offenbart": [
+                "typ",
+                "finanzielleSorgen",
+                "getrennt",
+                "druckZuhause",
+                "schichtarbeit",
+                "trainerwunsch"
+              ],
+              "ende": "Du weisst jetzt deutlich mehr über die Familie."
+            },
+            {
+              "id": "b",
+              "text": "Gut zu wissen. Ich komme darauf zurück.",
+              "ton": "sachlich",
+              "offenbart": [
+                "typ",
+                "trainerwunsch"
+              ],
+              "ende": "Ein gutes erstes Gespräch."
+            }
+          ]
+        },
+        "k4": {
+          "text": "«Ach, schon gut. Ist nicht so wichtig.»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Okay. Mein Ohr ist offen, wenn du magst.",
+              "ton": "empathisch",
+              "vertrauen": 2,
+              "ende": "{elternteil.vorname} lächelt. Vielleicht ein anderes Mal."
+            },
+            {
+              "id": "b",
+              "text": "Gut, dann bis bald.",
+              "ton": "ausweichend",
+              "ende": "Ihr verabschiedet euch."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "eltern_einsatzzeit",
+      "titel": "Gespräch über Einsatzzeit",
+      "art": "elternteil",
+      "beschreibung": "Ein Elternteil ist unzufrieden mit der Einsatzzeit des eigenen Kindes.",
+      "manuell": false,
+      "start": "k1",
+      "knoten": {
+        "k1": {
+          "text": "«{kind.vorname} sitzt nur auf der Bank! Das ist doch kein Sport so.» {elternteil.vorname} ist sichtlich aufgebracht.",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Ich verstehe, dass dich das ärgert. Was beobachtest du genau?",
+              "ton": "empathisch",
+              "weiter": "k2"
+            },
+            {
+              "id": "b",
+              "text": "In der {team} gelten Einsatzregeln. Ich erkläre sie dir gern.",
+              "ton": "sachlich",
+              "weiter": "k3"
+            },
+            {
+              "id": "c",
+              "text": "Die Aufstellung macht das Trainerteam. Da mische ich mich nicht ein.",
+              "ton": "bestimmt",
+              "effekte": [
+                {
+                  "typ": "elternStimmung",
+                  "ziel": "elternteil",
+                  "wert": -10
+                }
+              ],
+              "ende": "{elternteil.vorname} geht wütend weg."
+            },
+            {
+              "id": "d",
+              "text": "Ich schaue mir das mal an.",
+              "ton": "ausweichend",
+              "effekte": [
+                {
+                  "typ": "elternStimmung",
+                  "ziel": "elternteil",
+                  "wert": -4
+                }
+              ],
+              "ende": "{elternteil.vorname} glaubt dir nicht recht."
+            }
+          ]
+        },
+        "k2": {
+          "text": "«{kind.vorname} trainiert hart und spielt dann fünf Minuten. Die anderen lachen schon.»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Das tut weh. Ich sorge dafür, dass das Trainerteam faire Einsatzregeln für alle festlegt.",
+              "ton": "empathisch",
+              "effekte": [
+                {
+                  "typ": "teamFlag",
+                  "ziel": "team",
+                  "flag": "einsatzregeln",
+                  "wert": true
+                },
+                {
+                  "typ": "elternStimmung",
+                  "ziel": "elternteil",
+                  "wert": 8
+                },
+                {
+                  "typ": "zufriedenheit",
+                  "ziel": "familieKinder",
+                  "wert": 3
+                }
+              ],
+              "offenbart": [
+                "typ",
+                "druckZuhause"
+              ],
+              "ende": "Ihr vereinbart, dass die Einsatzregeln allen Familien erklärt werden."
+            },
+            {
+              "id": "b",
+              "text": "Mehr Einsatz gibt es nicht auf Druck, aber für alle nach klaren Regeln.",
+              "ton": "bestimmt",
+              "effekte": [
+                {
+                  "typ": "teamFlag",
+                  "ziel": "team",
+                  "flag": "einsatzregeln",
+                  "wert": true
+                },
+                {
+                  "typ": "elternStimmung",
+                  "ziel": "elternteil",
+                  "wert": -2
+                },
+                {
+                  "typ": "elternStimmung",
+                  "ziel": "andereElternImTeam",
+                  "wert": 2
+                }
+              ],
+              "offenbart": [
+                "typ"
+              ],
+              "ende": "{elternteil.vorname} schluckt, akzeptiert es aber."
+            },
+            {
+              "id": "c",
+              "text": "Ich verspreche dir, dass {kind.vorname} mehr spielt.",
+              "ton": "ausweichend",
+              "effekte": [
+                {
+                  "typ": "zufriedenheit",
+                  "ziel": "familieKinder",
+                  "wert": 5
+                },
+                {
+                  "typ": "zufriedenheit",
+                  "ziel": "andereKinderImTeam",
+                  "wert": -2
+                },
+                {
+                  "typ": "elternStimmung",
+                  "ziel": "andereElternImTeam",
+                  "wert": -4
+                }
+              ],
+              "ende": "Ein Versprechen, das andere Familien bald bemerken."
+            }
+          ]
+        },
+        "k3": {
+          "text": "«Regeln? Davon hat uns nie jemand etwas gesagt.»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Dann holen wir das nach: schriftlich und am nächsten Elternabend.",
+              "ton": "sachlich",
+              "effekte": [
+                {
+                  "typ": "teamFlag",
+                  "ziel": "team",
+                  "flag": "einsatzregeln",
+                  "wert": true
+                },
+                {
+                  "typ": "elternStimmung",
+                  "ziel": "teamEltern",
+                  "wert": 2
+                }
+              ],
+              "ende": "Die Einsatzregeln sind jetzt für alle transparent."
+            },
+            {
+              "id": "b",
+              "text": "Da hast du recht, das war unser Fehler. Danke für den Hinweis.",
+              "ton": "empathisch",
+              "vertrauen": 3,
+              "effekte": [
+                {
+                  "typ": "teamFlag",
+                  "ziel": "team",
+                  "flag": "einsatzregeln",
+                  "wert": true
+                },
+                {
+                  "typ": "elternStimmung",
+                  "ziel": "elternteil",
+                  "wert": 5
+                }
+              ],
+              "ende": "{elternteil.vorname} ist besänftigt."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "eltern_trainerwunsch",
+      "titel": "Anfrage als Hilfsleiter:in",
+      "art": "elternteil",
+      "beschreibung": "Ein Elternteil möchte mithelfen. Als Hilfsleiter:in im Team des eigenen Kindes droht ein Interessenkonflikt.",
+      "manuell": true,
+      "bedingung": [
+        {
+          "typ": "bekannt",
+          "wert": "trainerwunsch"
+        },
+        {
+          "typ": "keinTrainer"
+        },
+        {
+          "typ": "hatTeam"
+        }
+      ],
+      "start": "k1",
+      "knoten": {
+        "k1": {
+          "text": "«Du hattest erwähnt, dass ihr Unterstützung braucht?» {elternteil.vorname} wirkt neugierig.",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Ja! Hättest du Lust, bei {team} als Betreuer:in mitzuhelfen?",
+              "ton": "empathisch",
+              "bedingung": [
+                {
+                  "typ": "teamPlatz"
+                }
+              ],
+              "weiter": "k2"
+            },
+            {
+              "id": "b",
+              "text": "Wir suchen Leute für Fahrdienste und Anlässe. Wäre das etwas?",
+              "ton": "sachlich",
+              "weiter": "k3"
+            },
+            {
+              "id": "c",
+              "text": "Im Moment sind wir gut aufgestellt, aber danke.",
+              "ton": "ausweichend",
+              "effekte": [
+                {
+                  "typ": "elternStimmung",
+                  "ziel": "elternteil",
+                  "wert": -3
+                }
+              ],
+              "ende": "{elternteil.vorname} ist etwas enttäuscht."
+            }
+          ]
+        },
+        "k2": {
+          "text": "«Sehr gern! Nur: {kind.vorname} ist ja auch im Team. Ist das ein Problem?»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Gute Frage. Wichtig ist, dass alle nach denselben Regeln spielen – auch {kind.vorname}.",
+              "ton": "sachlich",
+              "effekte": [
+                {
+                  "typ": "elternZuTrainer",
+                  "ziel": "elternteil",
+                  "team": "team",
+                  "rolle": "betreuer"
+                },
+                {
+                  "typ": "teamFlag",
+                  "ziel": "team",
+                  "flag": "einsatzregeln",
+                  "wert": true
+                }
+              ],
+              "ende": "{elternteil.vorname} startet als Betreuer:in. Die Rolle gegenüber dem eigenen Kind ist von Anfang an geklärt."
+            },
+            {
+              "id": "b",
+              "text": "Das kriegen wir hin. Ich freue mich!",
+              "ton": "empathisch",
+              "effekte": [
+                {
+                  "typ": "elternZuTrainer",
+                  "ziel": "elternteil",
+                  "team": "team",
+                  "rolle": "betreuer"
+                }
+              ],
+              "ende": "{elternteil.vorname} startet als Betreuer:in. Beobachte, ob {kind.vorname} bevorzugt wird."
+            }
+          ]
+        },
+        "k3": {
+          "text": "«Klar, wo braucht ihr am meisten?»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Beim Fahrdienst an die Turniere von {team}.",
+              "ton": "sachlich",
+              "effekte": [
+                {
+                  "typ": "helfer",
+                  "ziel": "elternteil",
+                  "aktion": "fahrdienst",
+                  "team": "team"
+                }
+              ],
+              "ende": "{elternteil.vorname} übernimmt den Fahrdienst."
+            },
+            {
+              "id": "b",
+              "text": "Bei unseren Anlässen, z.B. dem Heimturnier.",
+              "ton": "empathisch",
+              "effekte": [
+                {
+                  "typ": "helfer",
+                  "ziel": "elternteil",
+                  "aktion": "anlaesse",
+                  "team": "team"
+                }
+              ],
+              "ende": "{elternteil.vorname} hilft künftig bei Anlässen."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "eltern_fahrdienst",
+      "titel": "Fahrdienst anfragen",
+      "art": "elternteil",
+      "beschreibung": "Frage ein Elternteil, ob es den Fahrdienst an Turniere übernimmt. Ob es zusagt, hängt von Engagement, Vertrauen und Auslastung ab.",
+      "manuell": true,
+      "bedingung": [
+        {
+          "typ": "keinHelfer"
+        },
+        {
+          "typ": "hatTeam"
+        }
+      ],
+      "start": "k1",
+      "knoten": {
+        "k1": {
+          "text": "Du sprichst {elternteil.vorname} auf den Fahrdienst für die Turniere von {team} an.",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Könntest du dir vorstellen, ab und zu an Turniere zu fahren? Jede Hilfe zählt.",
+              "ton": "empathisch",
+              "weiter": {
+                "bedingung": [
+                  {
+                    "typ": "bereitschaftAb",
+                    "wert": 12
+                  }
+                ],
+                "dann": "ja",
+                "sonst": "nein"
+              }
+            },
+            {
+              "id": "b",
+              "text": "Wir brauchen eine feste Person für den Fahrdienst. Hättest du Kapazität?",
+              "ton": "sachlich",
+              "weiter": {
+                "bedingung": [
+                  {
+                    "typ": "bereitschaftAb",
+                    "wert": 12
+                  }
+                ],
+                "dann": "ja",
+                "sonst": "nein"
+              }
+            },
+            {
+              "id": "c",
+              "text": "Von den Eltern erwarten wir, dass sie Fahrdienste übernehmen.",
+              "ton": "bestimmt",
+              "weiter": {
+                "bedingung": [
+                  {
+                    "typ": "bereitschaftAb",
+                    "wert": 14
+                  }
+                ],
+                "dann": "ja",
+                "sonst": "nein"
+              }
+            }
+          ]
+        },
+        "ja": {
+          "text": "«Ja, das mache ich gern. Schick mir einfach die Turnierdaten.»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Super, danke! Ich trage dich ein.",
+              "ton": "sachlich",
+              "effekte": [
+                {
+                  "typ": "helfer",
+                  "ziel": "elternteil",
+                  "aktion": "fahrdienst",
+                  "team": "team"
+                }
+              ],
+              "ende": "{elternteil.vorname} übernimmt den Fahrdienst für {team}."
+            },
+            {
+              "id": "b",
+              "text": "Danke dir! Sag bitte, wenn es dir zu viel wird.",
+              "ton": "empathisch",
+              "effekte": [
+                {
+                  "typ": "helfer",
+                  "ziel": "elternteil",
+                  "aktion": "fahrdienst",
+                  "team": "team"
+                }
+              ],
+              "ende": "{elternteil.vorname} übernimmt den Fahrdienst und fühlt sich wertgeschätzt."
+            }
+          ]
+        },
+        "nein": {
+          "text": "«Ehrlich gesagt liegt das zurzeit nicht drin.»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Verstehe ich. Danke trotzdem.",
+              "ton": "empathisch",
+              "ende": "Kein Fahrdienst, aber die Beziehung bleibt gut."
+            },
+            {
+              "id": "b",
+              "text": "Schade. Andere schaffen es auch.",
+              "ton": "bestimmt",
+              "vertrauen": -3,
+              "effekte": [
+                {
+                  "typ": "elternStimmung",
+                  "ziel": "elternteil",
+                  "wert": -4
+                }
+              ],
+              "ende": "{elternteil.vorname} fühlt sich unter Druck gesetzt."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "eltern_kritik",
+      "titel": "Kritik aus dem Elternchat",
+      "art": "elternteil",
+      "beschreibung": "Ein einflussreiches Elternteil macht im Chat Stimmung gegen die Organisation.",
+      "manuell": false,
+      "start": "k1",
+      "knoten": {
+        "k1": {
+          "text": "«Im Chat schreiben doch alle dasselbe: chaotische Organisation, keine Infos.» {elternteil.vorname} verschränkt die Arme.",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Danke, dass du es mir direkt sagst. Was stört dich am meisten?",
+              "ton": "empathisch",
+              "offenbart": [
+                "typ"
+              ],
+              "weiter": "k2"
+            },
+            {
+              "id": "b",
+              "text": "Lass uns die Punkte einzeln anschauen.",
+              "ton": "sachlich",
+              "weiter": "k2"
+            },
+            {
+              "id": "c",
+              "text": "Kritik bitte direkt an mich und nicht im Chat.",
+              "ton": "bestimmt",
+              "weiter": "k3"
+            },
+            {
+              "id": "d",
+              "text": "Das ist halt Ehrenamt.",
+              "ton": "ausweichend",
+              "effekte": [
+                {
+                  "typ": "elternStimmung",
+                  "ziel": "teamEltern",
+                  "wert": -3
+                }
+              ],
+              "ende": "{elternteil.vorname} schreibt am Abend den nächsten Beitrag im Chat."
+            }
+          ]
+        },
+        "k2": {
+          "text": "«Trainingszeiten werden kurzfristig geändert und niemand weiss, wer an die Turniere fährt.»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Ab sofort gibt es einen festen Kalender und eine Fahrdienst-Liste. Hilfst du mit?",
+              "ton": "sachlich",
+              "effekte": [
+                {
+                  "typ": "elternStimmung",
+                  "ziel": "teamEltern",
+                  "wert": 3
+                },
+                {
+                  "typ": "elternStimmung",
+                  "ziel": "elternteil",
+                  "wert": 6
+                }
+              ],
+              "ende": "Aus Kritik wird Mitarbeit – der Ton im Chat wird ruhiger."
+            },
+            {
+              "id": "b",
+              "text": "Du hast recht, da müssen wir besser werden. Ich melde mich mit Vorschlägen.",
+              "ton": "empathisch",
+              "effekte": [
+                {
+                  "typ": "elternStimmung",
+                  "ziel": "elternteil",
+                  "wert": 4
+                },
+                {
+                  "typ": "elternStimmung",
+                  "ziel": "teamEltern",
+                  "wert": 1
+                }
+              ],
+              "ende": "{elternteil.vorname} gibt dir eine Chance."
+            }
+          ]
+        },
+        "k3": {
+          "text": "«Im Chat lesen es wenigstens alle.»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Dann schreibe ich selbst im Chat, was wir ändern. Einverstanden?",
+              "ton": "sachlich",
+              "effekte": [
+                {
+                  "typ": "elternStimmung",
+                  "ziel": "teamEltern",
+                  "wert": 2
+                }
+              ],
+              "ende": "Deine Nachricht im Chat kommt gut an."
+            },
+            {
+              "id": "b",
+              "text": "Wer im Chat Stimmung macht, schadet den Kindern.",
+              "ton": "bestimmt",
+              "vertrauen": -4,
+              "effekte": [
+                {
+                  "typ": "elternStimmung",
+                  "ziel": "elternteil",
+                  "wert": -8
+                },
+                {
+                  "typ": "elternStimmung",
+                  "ziel": "teamEltern",
+                  "wert": -2
+                }
+              ],
+              "ende": "Die Fronten verhärten sich."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "eltern_finanzen",
+      "titel": "Gespräch über Kosten",
+      "art": "elternteil",
+      "beschreibung": "Ein vertrauliches Gespräch mit einer Familie, bei der das Geld knapp ist.",
+      "manuell": true,
+      "bedingung": [
+        {
+          "typ": "bekannt",
+          "wert": "finanzielleSorgen"
+        }
+      ],
+      "start": "k1",
+      "knoten": {
+        "k1": {
+          "text": "Du sprichst {elternteil.vorname} vertraulich auf die Kosten für Beitrag und Material an.",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Ich weiss, dass Beiträge und Material ins Geld gehen. Wir finden eine Lösung.",
+              "ton": "empathisch",
+              "weiter": "k2"
+            },
+            {
+              "id": "b",
+              "text": "Es gibt Unterstützung: Härtefallregelung, Ratenzahlung und Leihmaterial.",
+              "ton": "sachlich",
+              "weiter": "k2"
+            },
+            {
+              "id": "c",
+              "text": "Falls es mal eng wird, darfst du dich melden.",
+              "ton": "ausweichend",
+              "ende": "{elternteil.vorname} nickt, sagt aber nichts."
+            }
+          ]
+        },
+        "k2": {
+          "text": "«Das ist mir ehrlich gesagt unangenehm.»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Das muss es nicht. Es geht darum, dass {kind.vorname} weiterspielen kann.",
+              "ton": "empathisch",
+              "effekte": [
+                {
+                  "typ": "familieHaertefall",
+                  "ziel": "elternteil"
+                },
+                {
+                  "typ": "elternStimmung",
+                  "ziel": "elternteil",
+                  "wert": 10
+                },
+                {
+                  "typ": "zufriedenheit",
+                  "ziel": "familieKinder",
+                  "wert": 3
+                }
+              ],
+              "ende": "Die Familie wird diskret als Härtefall geführt."
+            },
+            {
+              "id": "b",
+              "text": "Wir stellen Leihmaterial zur Verfügung, und den Beitrag kannst du in Raten zahlen.",
+              "ton": "sachlich",
+              "effekte": [
+                {
+                  "typ": "zahlung",
+                  "ziel": "elternteil",
+                  "aktion": "raten"
+                },
+                {
+                  "typ": "zufriedenheit",
+                  "ziel": "familieKinder",
+                  "wert": 2
+                },
+                {
+                  "typ": "kasse",
+                  "wert": -80,
+                  "text": "Leihmaterial"
+                }
+              ],
+              "ende": "Eine pragmatische Lösung."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "eltern_ausstand",
+      "titel": "Offene Beiträge ansprechen",
+      "art": "elternteil",
+      "beschreibung": "Bei der Familie sind Beiträge offen. Wie du das Thema ansprichst, entscheidet über Geld und Vertrauen.",
+      "manuell": true,
+      "bedingung": [
+        {
+          "typ": "ausstand"
+        }
+      ],
+      "start": "k1",
+      "knoten": {
+        "k1": {
+          "text": "Bei der Familie von {elternteil.vorname} sind {elternteil.ausstand} an Beiträgen offen.",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Ich habe gesehen, dass Beiträge offen sind. Ist bei euch alles in Ordnung?",
+              "ton": "empathisch",
+              "offenbart": [
+                "finanzielleSorgen"
+              ],
+              "weiter": "k2"
+            },
+            {
+              "id": "b",
+              "text": "Es sind {elternteil.ausstand} offen. Wie wollen wir das regeln?",
+              "ton": "sachlich",
+              "weiter": "k3"
+            },
+            {
+              "id": "c",
+              "text": "Bitte begleicht den Betrag bis Ende Monat.",
+              "ton": "bestimmt",
+              "effekte": [
+                {
+                  "typ": "zahlung",
+                  "ziel": "elternteil",
+                  "aktion": "streng"
+                }
+              ],
+              "ende": "Eine klare Ansage."
+            }
+          ]
+        },
+        "k2": {
+          "text": "«Es war ein schwieriges Jahr.»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Dann machen wir einen Plan, der für euch passt.",
+              "ton": "empathisch",
+              "effekte": [
+                {
+                  "typ": "zahlung",
+                  "ziel": "elternteil",
+                  "aktion": "raten"
+                }
+              ],
+              "ende": "Ihr vereinbart eine Ratenzahlung."
+            },
+            {
+              "id": "b",
+              "text": "Es gibt eine Härtefallregelung. Ich schlage euch dafür vor.",
+              "ton": "sachlich",
+              "effekte": [
+                {
+                  "typ": "zahlung",
+                  "ziel": "elternteil",
+                  "aktion": "haertefall"
+                }
+              ],
+              "ende": "Die Familie wird als Härtefall geführt, die Hälfte des Ausstands erlassen."
+            }
+          ]
+        },
+        "k3": {
+          "text": "«Ich kann nicht alles auf einmal zahlen.»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Dann zahlst du in Raten ab.",
+              "ton": "sachlich",
+              "effekte": [
+                {
+                  "typ": "zahlung",
+                  "ziel": "elternteil",
+                  "aktion": "raten"
+                }
+              ],
+              "ende": "Ihr vereinbart eine Ratenzahlung."
+            },
+            {
+              "id": "b",
+              "text": "Die Regeln gelten für alle.",
+              "ton": "bestimmt",
+              "effekte": [
+                {
+                  "typ": "zahlung",
+                  "ziel": "elternteil",
+                  "aktion": "streng"
+                }
+              ],
+              "ende": "{elternteil.vorname} ist verärgert."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "eltern_bande",
+      "titel": "Lautstärke an der Bande",
+      "art": "elternteil",
+      "beschreibung": "Ein Elternteil ruft an der Bande dauernd Anweisungen und Kritik.",
+      "manuell": false,
+      "start": "k1",
+      "knoten": {
+        "k1": {
+          "text": "«Was ist denn? Ich feuere halt an!»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Dein Einsatz freut mich. Aber die Kinder werden unsicher, wenn es laut wird.",
+              "ton": "empathisch",
+              "weiter": "k2"
+            },
+            {
+              "id": "b",
+              "text": "An der Bande gilt: anfeuern ja, Anweisungen und Kritik nein.",
+              "ton": "sachlich",
+              "weiter": "k2"
+            },
+            {
+              "id": "c",
+              "text": "Noch einmal so, und du schaust von ausserhalb der Halle zu.",
+              "ton": "bestimmt",
+              "vertrauen": -4,
+              "effekte": [
+                {
+                  "typ": "elternStimmung",
+                  "ziel": "elternteil",
+                  "wert": -12
+                },
+                {
+                  "typ": "teamFlag",
+                  "ziel": "team",
+                  "flag": "banderegeln",
+                  "wert": true
+                }
+              ],
+              "ende": "Ab jetzt ist es ruhig – aber die Stimmung ist frostig."
+            }
+          ]
+        },
+        "k2": {
+          "text": "{elternteil.vorname} schaut kurz weg. «So schlimm war es doch nicht.»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Hilfst du mit, diese Regel allen Eltern zu erklären?",
+              "ton": "sachlich",
+              "effekte": [
+                {
+                  "typ": "teamFlag",
+                  "ziel": "team",
+                  "flag": "banderegeln",
+                  "wert": true
+                },
+                {
+                  "typ": "elternStimmung",
+                  "ziel": "elternteil",
+                  "wert": 3
+                }
+              ],
+              "ende": "{elternteil.vorname} wird zur Verbündeten an der Bande."
+            },
+            {
+              "id": "b",
+              "text": "Komm doch mal ins Training und schau, woran die Kinder arbeiten.",
+              "ton": "empathisch",
+              "vertrauen": 3,
+              "effekte": [
+                {
+                  "typ": "elternStimmung",
+                  "ziel": "elternteil",
+                  "wert": 4
+                }
+              ],
+              "ende": "{elternteil.vorname} ist neugierig geworden."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "kind_befinden",
+      "titel": "Wie geht es dir?",
+      "art": "kind",
+      "beschreibung": "Ein kurzes Gespräch nach dem Training. Mit genug Vertrauen erfährst du, was das Kind beschäftigt.",
+      "manuell": true,
+      "bedingung": [
+        {
+          "typ": "hatTeam"
+        }
+      ],
+      "start": "k1",
+      "knoten": {
+        "k1": {
+          "text": "Nach dem Training bleibt {kind.vorname} noch kurz da. Du fragst, wie es so läuft.",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Wie geht es dir eigentlich im Team?",
+              "ton": "empathisch",
+              "weiter": {
+                "vertrauenAb": 10,
+                "dann": "k2",
+                "sonst": "k3"
+              }
+            },
+            {
+              "id": "b",
+              "text": "Was gefällt dir am Training, was nicht?",
+              "ton": "sachlich",
+              "weiter": "k2"
+            },
+            {
+              "id": "c",
+              "text": "Ich hoffe, du gibst weiter Vollgas!",
+              "ton": "bestimmt",
+              "effekte": [
+                {
+                  "typ": "zufriedenheit",
+                  "ziel": "kind",
+                  "wert": -1
+                }
+              ],
+              "ende": "«Klar …» {kind.vorname} schaut zu Boden."
+            }
+          ]
+        },
+        "k2": {
+          "text": "«Eigentlich gut. Nur manchmal …»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Nur manchmal? Du kannst es mir ruhig sagen.",
+              "ton": "empathisch",
+              "effekte": [
+                {
+                  "typ": "zufriedenheit",
+                  "ziel": "kind",
+                  "wert": 3
+                }
+              ],
+              "offenbart": [
+                "motivationsgrund",
+                "zuhause"
+              ],
+              "ende": "{kind.vorname} erzählt, was beschäftigt. Allein das Zuhören tut gut."
+            },
+            {
+              "id": "b",
+              "text": "Gibt es etwas, das wir im Training ändern sollten?",
+              "ton": "sachlich",
+              "effekte": [
+                {
+                  "typ": "zufriedenheit",
+                  "ziel": "kind",
+                  "wert": 1
+                }
+              ],
+              "offenbart": [
+                "motivationsgrund"
+              ],
+              "ende": "{kind.vorname} hat einen konkreten Wunsch."
+            }
+          ]
+        },
+        "k3": {
+          "text": "{kind.vorname} zuckt mit den Schultern. «Passt schon.»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Okay. Wenn mal was ist, bin ich da.",
+              "ton": "empathisch",
+              "vertrauen": 3,
+              "ende": "{kind.vorname} nickt."
+            },
+            {
+              "id": "b",
+              "text": "Na dann, bis nächste Woche!",
+              "ton": "ausweichend",
+              "ende": "{kind.vorname} geht nach Hause."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "kind_aufhoeren",
+      "titel": "Kind will aufhören",
+      "art": "kind",
+      "beschreibung": "Ein Kind will aufhören, die Eltern wollen nicht.",
+      "manuell": false,
+      "start": "k1",
+      "knoten": {
+        "k1": {
+          "text": "«Ich will nicht mehr ins Hockey. Aber meine Eltern sagen, ich muss.»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Danke, dass du es mir sagst. Was ist der Grund?",
+              "ton": "empathisch",
+              "offenbart": [
+                "motivationsgrund"
+              ],
+              "weiter": "k2"
+            },
+            {
+              "id": "b",
+              "text": "Lass uns zusammen mit deinen Eltern eine Lösung suchen.",
+              "ton": "sachlich",
+              "weiter": "k3"
+            },
+            {
+              "id": "c",
+              "text": "Durchbeissen gehört dazu.",
+              "ton": "bestimmt",
+              "effekte": [
+                {
+                  "typ": "zufriedenheit",
+                  "ziel": "kind",
+                  "wert": -6
+                },
+                {
+                  "typ": "austrittsRisiko",
+                  "ziel": "kind",
+                  "wert": 0.1
+                }
+              ],
+              "ende": "{kind.vorname} fühlt sich nicht ernst genommen."
+            }
+          ]
+        },
+        "k2": {
+          "text": "«Es macht einfach keinen Spass mehr. Und ich habe kaum Zeit für Freunde.»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Wie wäre eine Pause bis nach den Ferien? Danach entscheidest du.",
+              "ton": "empathisch",
+              "effekte": [
+                {
+                  "typ": "zufriedenheit",
+                  "ziel": "kind",
+                  "wert": 6
+                },
+                {
+                  "typ": "elternStimmung",
+                  "ziel": "elternteil",
+                  "wert": -2
+                }
+              ],
+              "ende": "{kind.vorname} ist erleichtert."
+            },
+            {
+              "id": "b",
+              "text": "Probier doch ein Training pro Woche, ohne Druck.",
+              "ton": "sachlich",
+              "effekte": [
+                {
+                  "typ": "zufriedenheit",
+                  "ziel": "kind",
+                  "wert": 4
+                }
+              ],
+              "ende": "Ein Versuch, auf den sich alle einigen können."
+            },
+            {
+              "id": "c",
+              "text": "Das geht sicher vorbei.",
+              "ton": "ausweichend",
+              "effekte": [
+                {
+                  "typ": "zufriedenheit",
+                  "ziel": "kind",
+                  "wert": -3
+                }
+              ],
+              "ende": "{kind.vorname} bleibt unglücklich."
+            }
+          ]
+        },
+        "k3": {
+          "text": "{kind.vorname} nickt zögerlich.",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Ich lade euch zu einem Gespräch ein. Deine Meinung zählt dabei.",
+              "ton": "empathisch",
+              "effekte": [
+                {
+                  "typ": "zufriedenheit",
+                  "ziel": "kind",
+                  "wert": 4
+                },
+                {
+                  "typ": "elternStimmung",
+                  "ziel": "elternteil",
+                  "wert": 2
+                }
+              ],
+              "ende": "Das Gespräch mit der Familie entspannt die Lage."
+            },
+            {
+              "id": "b",
+              "text": "Bei Jugend+Sport soll Sport freiwillig sein. Das erkläre ich auch deinen Eltern.",
+              "ton": "sachlich",
+              "effekte": [
+                {
+                  "typ": "zufriedenheit",
+                  "ziel": "kind",
+                  "wert": 3
+                },
+                {
+                  "typ": "elternStimmung",
+                  "ziel": "elternteil",
+                  "wert": -1
+                }
+              ],
+              "ende": "Die Eltern denken darüber nach."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "kind_pruefung",
+      "titel": "Prüfungsstress",
+      "art": "kind",
+      "beschreibung": "Ein Kind steckt mitten in Prüfungen und fühlt sich überfordert.",
+      "manuell": false,
+      "start": "k1",
+      "knoten": {
+        "k1": {
+          "text": "{kind.vorname} wirkt müde. «Ich habe nächste Woche drei Prüfungen.»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Schule geht vor. Nimm dir die Zeit.",
+              "ton": "empathisch",
+              "effekte": [
+                {
+                  "typ": "zufriedenheit",
+                  "ziel": "kind",
+                  "wert": 4
+                },
+                {
+                  "typ": "elternStimmung",
+                  "ziel": "elternteil",
+                  "wert": 6
+                }
+              ],
+              "weiter": "k2"
+            },
+            {
+              "id": "b",
+              "text": "Wie wäre ein Training pro Woche als Ausgleich?",
+              "ton": "sachlich",
+              "effekte": [
+                {
+                  "typ": "zufriedenheit",
+                  "ziel": "kind",
+                  "wert": 3
+                },
+                {
+                  "typ": "elternStimmung",
+                  "ziel": "elternteil",
+                  "wert": 3
+                }
+              ],
+              "ende": "Ein guter Kompromiss."
+            },
+            {
+              "id": "c",
+              "text": "Das Team braucht dich. Komm trotzdem.",
+              "ton": "bestimmt",
+              "effekte": [
+                {
+                  "typ": "zufriedenheit",
+                  "ziel": "kind",
+                  "wert": -6
+                },
+                {
+                  "typ": "elternStimmung",
+                  "ziel": "elternteil",
+                  "wert": -8
+                },
+                {
+                  "typ": "austrittsRisiko",
+                  "ziel": "kind",
+                  "wert": 0.08
+                }
+              ],
+              "ende": "{kind.vorname} fühlt sich unter Druck gesetzt."
+            }
+          ]
+        },
+        "k2": {
+          "text": "«Danke. Ehrlich gesagt habe ich Angst, meinen Platz im Team zu verlieren.»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Dein Platz ist sicher. Wir freuen uns, wenn du zurück bist.",
+              "ton": "empathisch",
+              "effekte": [
+                {
+                  "typ": "zufriedenheit",
+                  "ziel": "kind",
+                  "wert": 3
+                }
+              ],
+              "ende": "{kind.vorname} geht beruhigt in die Prüfungswoche."
+            },
+            {
+              "id": "b",
+              "text": "Das hängt davon ab, wie fit du danach bist.",
+              "ton": "bestimmt",
+              "effekte": [
+                {
+                  "typ": "zufriedenheit",
+                  "ziel": "kind",
+                  "wert": -3
+                }
+              ],
+              "ende": "Die Sorge bleibt."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "trainer_befinden",
+      "titel": "Wie läuft es?",
+      "art": "trainer",
+      "beschreibung": "Ein Gespräch über Belastung und Motivation. Mit Vertrauen erfährst du, ob jemand an Rücktritt denkt.",
+      "manuell": true,
+      "start": "k1",
+      "knoten": {
+        "k1": {
+          "text": "Du fragst {trainer.vorname} nach dem Training, wie es läuft.",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Wie geht es dir persönlich mit dem Trainerjob?",
+              "ton": "empathisch",
+              "weiter": {
+                "vertrauenAb": 8,
+                "dann": "k2",
+                "sonst": "k3"
+              }
+            },
+            {
+              "id": "b",
+              "text": "Wie läuft es mit {team}? Was brauchst du?",
+              "ton": "sachlich",
+              "weiter": "k4"
+            },
+            {
+              "id": "c",
+              "text": "Alles gut? Super, weiter so!",
+              "ton": "ausweichend",
+              "ende": "{trainer.vorname} lächelt etwas gequält."
+            }
+          ]
+        },
+        "k2": {
+          "text": "«Ehrlich? Es ist viel. Manchmal frage ich mich, wie lange ich das noch mache.»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Danke für deine Offenheit. Was würde dich entlasten?",
+              "ton": "empathisch",
+              "effekte": [
+                {
+                  "typ": "trainerMotivation",
+                  "ziel": "trainer",
+                  "wert": 2
+                }
+              ],
+              "offenbart": [
+                "ruecktrittsgedanken",
+                "belastungZuhause"
+              ],
+              "ende": "Ihr vereinbart, nach Entlastung zu suchen: eine zusätzliche Person im Team oder ein Training weniger."
+            },
+            {
+              "id": "b",
+              "text": "Ich schaue, dass du Unterstützung bekommst.",
+              "ton": "sachlich",
+              "effekte": [
+                {
+                  "typ": "trainerBelastung",
+                  "ziel": "trainer",
+                  "wert": -10
+                }
+              ],
+              "offenbart": [
+                "ruecktrittsgedanken"
+              ],
+              "ende": "{trainer.vorname} ist erleichtert."
+            }
+          ]
+        },
+        "k3": {
+          "text": "«Passt schon, danke.»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Wenn mal was ist, sag es mir.",
+              "ton": "empathisch",
+              "vertrauen": 2,
+              "ende": "{trainer.vorname} nickt."
+            },
+            {
+              "id": "b",
+              "text": "Gut. Dann bis nächste Woche.",
+              "ton": "sachlich",
+              "ende": "Ihr geht auseinander."
+            }
+          ]
+        },
+        "k4": {
+          "text": "«Das Material ist knapp, und ein paar Eltern machen Druck.»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Ich kümmere mich um das Material.",
+              "ton": "sachlich",
+              "effekte": [
+                {
+                  "typ": "kasse",
+                  "wert": -100,
+                  "text": "Material für das Trainerteam"
+                },
+                {
+                  "typ": "trainerMotivation",
+                  "ziel": "trainer",
+                  "wert": 2
+                }
+              ],
+              "ende": "{trainer.vorname} ist froh um die Unterstützung."
+            },
+            {
+              "id": "b",
+              "text": "Bei Elternfragen stehe ich hinter dir.",
+              "ton": "empathisch",
+              "effekte": [
+                {
+                  "typ": "trainerMotivation",
+                  "ziel": "trainer",
+                  "wert": 1
+                }
+              ],
+              "ende": "{trainer.vorname} fühlt sich gestärkt."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "trainer_einschaetzung",
+      "titel": "Einschätzung der Kinder",
+      "art": "trainer",
+      "beschreibung": "Erfahrene Trainer:innen können das Talent der Kinder einschätzen.",
+      "manuell": true,
+      "bedingung": [
+        {
+          "typ": "hatTeam"
+        }
+      ],
+      "start": "k1",
+      "knoten": {
+        "k1": {
+          "text": "Du bittest {trainer.vorname}, die Kinder von {team} einzuschätzen.",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Wer hat besonders Potenzial, wer braucht Förderung?",
+              "ton": "sachlich",
+              "weiter": {
+                "bedingung": [
+                  {
+                    "typ": "erfahrungAb",
+                    "wert": 10
+                  }
+                ],
+                "dann": "k2",
+                "sonst": "k3"
+              }
+            },
+            {
+              "id": "b",
+              "text": "Mich interessiert vor allem, wie es den Kindern geht.",
+              "ton": "empathisch",
+              "weiter": "k4"
+            }
+          ]
+        },
+        "k2": {
+          "text": "{trainer.vorname} holt das Notizbuch hervor und gibt dir eine fundierte Einschätzung.",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Danke, das hilft bei der Planung.",
+              "ton": "sachlich",
+              "effekte": [
+                {
+                  "typ": "talentEinschaetzung",
+                  "ziel": "team"
+                }
+              ],
+              "ende": "Du kennst jetzt das Talent der Kinder von {team}."
+            }
+          ]
+        },
+        "k3": {
+          "text": "«Ehrlich gesagt bin ich noch nicht lange dabei. Ich tue mich schwer damit.»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Kein Problem. Wir schauen es gemeinsam an.",
+              "ton": "empathisch",
+              "vertrauen": 2,
+              "ende": "{trainer.vorname} schätzt die Unterstützung."
+            },
+            {
+              "id": "b",
+              "text": "Das solltest du aber können.",
+              "ton": "bestimmt",
+              "effekte": [
+                {
+                  "typ": "trainerMotivation",
+                  "ziel": "trainer",
+                  "wert": -2
+                }
+              ],
+              "ende": "{trainer.vorname} wirkt verunsichert."
+            }
+          ]
+        },
+        "k4": {
+          "text": "«Den meisten gut. Ein paar wirken aber bedrückt.»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Dann nehmen wir uns Zeit für sie.",
+              "ton": "empathisch",
+              "effekte": [
+                {
+                  "typ": "zufriedenheit",
+                  "ziel": "teamKinder",
+                  "wert": 1
+                }
+              ],
+              "ende": "Ihr achtet in den nächsten Trainings besonders darauf."
+            },
+            {
+              "id": "b",
+              "text": "Gut zu wissen.",
+              "ton": "sachlich",
+              "ende": "Ihr behaltet es im Auge."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "teamsitzung",
+      "titel": "Teamsitzung",
+      "art": "trainer",
+      "beschreibung": "Sitzung mit dem ganzen Trainerteam, geleitet von der Haupttrainer:in.",
+      "manuell": true,
+      "bedingung": [
+        {
+          "typ": "haupttrainer"
+        }
+      ],
+      "start": "k1",
+      "knoten": {
+        "k1": {
+          "text": "Teamsitzung mit dem Trainerteam von {team}. {trainer.vorname} leitet sie.",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Lasst uns Rollen und Einsatzregeln klar festhalten.",
+              "ton": "sachlich",
+              "weiter": "k2"
+            },
+            {
+              "id": "b",
+              "text": "Wie geht es euch als Team? Was läuft gut, was nicht?",
+              "ton": "empathisch",
+              "weiter": "k3"
+            },
+            {
+              "id": "c",
+              "text": "Ich erwarte in dieser Saison mehr Siege.",
+              "ton": "bestimmt",
+              "weiter": "k4"
+            }
+          ]
+        },
+        "k2": {
+          "text": "Gemeinsam entsteht ein kurzes Papier mit Rollen und Einsatzregeln.",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Wir teilen es allen Eltern mit.",
+              "ton": "sachlich",
+              "effekte": [
+                {
+                  "typ": "teamFlag",
+                  "ziel": "team",
+                  "flag": "einsatzregeln",
+                  "wert": true
+                },
+                {
+                  "typ": "elternStimmung",
+                  "ziel": "teamEltern",
+                  "wert": 2
+                }
+              ],
+              "ende": "Die Eltern schätzen die Klarheit."
+            },
+            {
+              "id": "b",
+              "text": "Wir behalten es im Trainerteam.",
+              "ton": "sachlich",
+              "effekte": [
+                {
+                  "typ": "teamFlag",
+                  "ziel": "team",
+                  "flag": "einsatzregeln",
+                  "wert": true
+                }
+              ],
+              "ende": "Das Trainerteam ist sich einig."
+            }
+          ]
+        },
+        "k3": {
+          "text": "Es wird offen geredet, auch über Spannungen im Team.",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Danke. Lasst uns die Aufgaben besser verteilen.",
+              "ton": "empathisch",
+              "effekte": [
+                {
+                  "typ": "trainerMotivation",
+                  "ziel": "trainerVon:team",
+                  "wert": 1
+                },
+                {
+                  "typ": "trainerBelastung",
+                  "ziel": "trainerVon:team",
+                  "wert": -5
+                }
+              ],
+              "ende": "Die Last ist besser verteilt."
+            }
+          ]
+        },
+        "k4": {
+          "text": "Unbehagliches Schweigen.",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Leistung zählt.",
+              "ton": "bestimmt",
+              "effekte": [
+                {
+                  "typ": "trainerMotivation",
+                  "ziel": "trainerVon:team",
+                  "wert": -2
+                },
+                {
+                  "typ": "zufriedenheit",
+                  "ziel": "teamKinder",
+                  "wert": -2
+                }
+              ],
+              "ende": "Das Trainerteam macht Druck – die Kinder spüren es."
+            },
+            {
+              "id": "b",
+              "text": "Oder anders gesagt: Ich will, dass die Kinder gern kommen.",
+              "ton": "empathisch",
+              "effekte": [
+                {
+                  "typ": "trainerMotivation",
+                  "ziel": "trainerVon:team",
+                  "wert": 1
+                }
+              ],
+              "ende": "Die Stimmung entspannt sich."
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

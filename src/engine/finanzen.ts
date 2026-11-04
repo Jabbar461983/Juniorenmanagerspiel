@@ -65,5 +65,6 @@ export const KATEGORIE_NAMEN: Record<Buchung['kategorie'], string> = {
   anwerbung: 'Anwerbung',
   verbandsgebuehren: 'Verbandsgebühren',
   vereinsbeitrag: 'Beitrag Gesamtverein',
-  ereignis: 'Ereignisse'
+  ereignis: 'Ereignisse',
+  elternarbeit: 'Elternarbeit'
 };

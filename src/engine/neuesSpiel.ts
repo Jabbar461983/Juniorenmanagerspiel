@@ -3,6 +3,7 @@ import { B, HALLEN } from './config';
 import { neuesTeam } from './entscheide';
 import { ereignisKontext, erzeugeEreignisse } from './ereignisse';
 import { erzeugeFamilie, erzeugeKind, erzeugeTrainer } from './generator';
+import { familieVernetzen } from './eltern';
 import { SCHEMA_VERSION } from './migrations';
 import { aktiveKinder, stufeFuerAlter, teamKinder } from './personen';
 import { Rng, seedAus } from './rng';
@@ -77,6 +78,12 @@ export function neuesSpiel(opt: NeuesSpielOptionen): GameState {
   for (const k of Object.values(state.kinder)) {
     const stufe = stufeFuerAlter(saisonAlter(state, k.geburtsjahr)) as Stufe;
     k.teamId = Object.values(state.teams).find((t) => t.stufe === stufe)!.id;
+  }
+
+  // Familien im selben Team kennen sich teilweise
+  for (const team of Object.values(state.teams)) {
+    const familien = [...new Set(teamKinder(state, team.id).map((k) => k.familieId))];
+    for (const fid of familien) familieVernetzen(state, rng, fid, team.id);
   }
 
   // Trainer:innen pro Team

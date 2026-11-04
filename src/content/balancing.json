@@ -339,5 +339,106 @@
         "titel": "Neuanfang nötig"
       }
     ]
+  },
+  "eltern": {
+    "_kommentar": "Etappe 2: Eltern-Einfluss",
+    "stimmungZuKind": 0.08,
+    "ansteckung": 0.05,
+    "freundschaftZug": 0.03,
+    "freundschaftWahrscheinlichkeit": 0.08,
+    "getrenntWahrscheinlichkeit": 0.15,
+    "typBekanntStart": 0.25,
+    "vertrauenZufriedenheitFaktor": 0.05,
+    "vertrauenZerfall": 0.01,
+    "zahlung": {
+      "saeumigBasis": 0.0005,
+      "saeumigProPunktUnter20": 0.0005,
+      "tiefesEinkommenZusatz": 0.002,
+      "erholung": 0.12,
+      "mahnSchwelle": 60,
+      "ratenAnteil": 0.15,
+      "strengAustrittsrisiko": 0.08,
+      "strengStimmung": -10,
+      "freundlichErfolg": 0.5,
+      "strengErfolg": 0.8
+    },
+    "helfer": {
+      "auslastungMitSpiel": 8,
+      "auslastungOhneSpiel": -4,
+      "auslastungFerien": -8,
+      "limit": 75,
+      "trainerEntlastung": 2,
+      "bereitschaftSchwelle": 12
+    },
+    "transport": {
+      "anwesenheitOhneFahrdienst": 0.6,
+      "motivationAbzug": 0.2
+    },
+    "interessenkonflikt": {
+      "einsatzBonus": 0.15,
+      "stimmungAndere": -0.3
+    },
+    "elternabend": {
+      "maxProSaison": 2,
+      "kosten": 60,
+      "trainerBelastung": 5,
+      "stimmung": 6,
+      "vertrauen": 5,
+      "trainingsstartFaktor": 1.5,
+      "auffaelligEinfluss": 12,
+      "auffaelligKonflikt": 14
+    }
+  },
+  "dialog": {
+    "_kommentar": "Etappe 2: Dialogsystem",
+    "gespraecheProWoche": 2,
+    "abkuehlungWochen": 3,
+    "offenbarenAb": 15,
+    "ton": {
+      "empathisch": 5,
+      "sachlich": 2,
+      "bestimmt": -1,
+      "ausweichend": -5
+    },
+    "elternTyp": {
+      "kritiker": {
+        "sachlich": 3,
+        "ausweichend": -4,
+        "empathisch": -1
+      },
+      "ehrgeizig": {
+        "bestimmt": 1,
+        "empathisch": -1
+      },
+      "engagiert": {
+        "empathisch": 1
+      },
+      "abwesend": {
+        "sachlich": 1
+      },
+      "sponsor": {
+        "sachlich": 1,
+        "bestimmt": -1
+      },
+      "potenziellerTrainer": {
+        "empathisch": 1
+      }
+    },
+    "konfliktbereitAb": 14,
+    "konfliktbereitBestimmt": -3,
+    "kindZug": {
+      "sensibel": {
+        "empathisch": 3,
+        "bestimmt": -3
+      },
+      "rebell": {
+        "bestimmt": -4,
+        "sachlich": 1
+      },
+      "schuechtern": {
+        "empathisch": 2,
+        "bestimmt": -2
+      }
+    }
   }
 }
