@@ -1,9 +1,9 @@
 // Verborgene Infos (Etappe 2): Was die Spieler:in über eine Person weiss.
 // Infos werden aus dem Spielstand berechnet; `person.bekannt` hält fest, welche
 // bereits offenbart wurden (durch Gespräche, Elternabende oder Beobachtung).
-import { elternTyp } from './config';
+import { elternTyp, prioritaetName } from './config';
 import { FAKTOR_NAMEN } from './zufriedenheit';
-import type { Elternteil, GameState, Kind, Person, Trainer, Zufriedenheitsfaktoren } from './types';
+import type { Elternteil, GameState, Kind, Person, Trainer, Vorstandsmitglied, Zufriedenheitsfaktoren } from './types';
 
 export interface Info {
   schluessel: string;
@@ -72,8 +72,13 @@ function trainerInfos(_s: GameState, t: Trainer): Omit<Info, 'bekannt'>[] {
   return res;
 }
 
+function vorstandInfos(v: Vorstandsmitglied): Omit<Info, 'bekannt'>[] {
+  return [{ schluessel: 'prioritaet', titel: 'Priorität im Verein', text: prioritaetName(v.prioritaet) }];
+}
+
 export function infosVon(s: GameState, p: Person): Info[] {
-  const roh = p.rolle === 'elternteil' ? elternInfos(s, p) : p.rolle === 'kind' ? kindInfos(s, p) : trainerInfos(s, p);
+  const roh =
+    p.rolle === 'elternteil' ? elternInfos(s, p) : p.rolle === 'kind' ? kindInfos(s, p) : p.rolle === 'trainer' ? trainerInfos(s, p) : vorstandInfos(p);
   return roh.map((i) => ({ ...i, bekannt: p.bekannt.includes(i.schluessel) }));
 }
 

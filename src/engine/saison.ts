@@ -5,17 +5,40 @@ import type { Rng } from './rng';
 import type { GameState, SaisonBilanz } from './types';
 import { STUFEN } from './types';
 import { leererWettkampf, tabelle, playoffRundeName } from './wettkampf';
+import { trainerAusKind } from './generator';
+import { bewertungsTitel, endbewertung, kernbewertung } from './bewertung';
+import { chronik, einflussAendern } from './vorstand';
 import { clamp, neueId } from './util';
 
-/** Punkte: Anzahl × Zufriedenheit; Zufriedenheit zählt überproportional. */
+/** Kernbewertung aus Anzahl und Zufriedenheit (0–100), z.B. für Vergleiche. */
 export function bewertung(zufriedenheiten: number[]): number {
-  const { exponent, faktor } = B.bewertung;
-  return Math.round(zufriedenheiten.reduce((s, z) => s + faktor * Math.pow(clamp(z, 0, 100) / 100, exponent), 0));
+  const z = zufriedenheiten.length ? zufriedenheiten.reduce((a, b) => a + b, 0) / zufriedenheiten.length : 0;
+  return Math.round(kernbewertung(zufriedenheiten.length, z) * 10) / 10;
 }
 
-export function bewertungsTitel(punkte: number): string {
-  for (const t of B.bewertung.titel) if (punkte >= t.ab) return t.titel;
-  return B.bewertung.titel[B.bewertung.titel.length - 1]!.titel;
+export { bewertungsTitel };
+
+/** Einfluss und Chronik für Wettkampferfolge der Saison */
+function wettkampfErfolge(state: GameState): void {
+  const wk = state.wettkampf;
+  if (!wk.gestartet) return;
+  const E = B.vorstand.einfluss;
+  for (const stufe of ['U12', 'U15'] as const) {
+    const liga = wk.ligen[stufe];
+    for (const t of liga.teams.filter((x) => x.eigenesTeamId)) {
+      const rang = liga.finalRangliste.indexOf(t.id);
+      if (rang === 0) {
+        einflussAendern(state, E.finalturnierSieg);
+        chronik(state, 'erfolg', `${t.name} gewinnt das Finalturnier!`);
+      } else if (rang > 0) einflussAendern(state, E.finalturnierTeilnahme);
+    }
+  }
+  const m = wk.u18;
+  const meister = m.teams.find((t) => t.id === m.meisterId);
+  if (meister?.eigenesTeamId) {
+    einflussAendern(state, E.meister);
+    chronik(state, 'erfolg', `${meister.name} wird U18-Meister!`);
+  }
 }
 
 export function wettkampfZusammenfassung(state: GameState): string[] {
@@ -54,9 +77,11 @@ export function wettkampfZusammenfassung(state: GameState): string[] {
 
 /** Schliesst die Saison ab (nach Woche 52). Mutiert den Spielstand. */
 export function saisonAbschliessen(state: GameState, rng: Rng): SaisonBilanz {
+  wettkampfErfolge(state);
   const kinder = aktiveKinder(state);
   const zs = kinder.map((k) => k.zufriedenheit);
-  const punkte = bewertung(zs);
+  const eb = endbewertung(state);
+  const punkte = eb.punkte;
   const bilanz: SaisonBilanz = {
     saison: state.saison,
     mitgliederStart: state.saisonStatistik.mitgliederStart,
@@ -68,14 +93,21 @@ export function saisonAbschliessen(state: GameState, rng: Rng): SaisonBilanz {
     uebertritte: 0,
     kasseEnde: state.finanzen.kasse,
     bewertung: punkte,
-    titel: bewertungsTitel(punkte),
-    wettkampf: wettkampfZusammenfassung(state)
+    titel: eb.titel,
+    wettkampf: wettkampfZusammenfassung(state),
+    endbewertung: eb
   };
+  chronik(
+    state,
+    'verein',
+    `Saison ${state.saison}: ${kinder.length} Junior:innen, Zufriedenheit ${bilanz.zufriedenheitSchnitt}, Bewertung ${punkte} («${eb.titel}»).`
+  );
 
   // ---- Übergang in die neue Saison ----
   state.saison += 1;
   state.woche = 1;
 
+  const neueHilfsleiter: string[] = [];
   for (const k of kinderImVerein(state)) {
     const a = alter(state, k);
     k.portrait.gruppe = portraitGruppe(a);
@@ -85,6 +117,10 @@ export function saisonAbschliessen(state: GameState, rng: Rng): SaisonBilanz {
       k.austritt = { saison: state.saison - 1, woche: B.spiel.wochenProSaison, grund: 'U18-Abgang: Übertritt zu den Aktiven' };
       k.teamId = null;
       bilanz.u18Abgaenger++;
+      if (k.werte.motivation >= B.trainer.u18HilfsleiterMotivationAb && rng.chance(B.trainer.u18HilfsleiterWahrscheinlichkeit)) {
+        const t = trainerAusKind(state, rng, k);
+        neueHilfsleiter.push(name(t));
+      }
       continue;
     }
     const aktuell = k.teamId ? state.teams[k.teamId] : undefined;
@@ -121,6 +157,8 @@ export function saisonAbschliessen(state: GameState, rng: Rng): SaisonBilanz {
     team.absagenInFolge = 0;
     team.elternabende = 0;
   }
+  state.vorstand.hallenRabatt = 0;
+  for (const v of Object.values(state.vorstand.mitglieder)) v.portrait.gruppe = portraitGruppe(alter(state, v));
 
   state.wettkampf = leererWettkampf();
   state.bilanzen.push(bilanz);
@@ -138,6 +176,7 @@ export function saisonAbschliessen(state: GameState, rng: Rng): SaisonBilanz {
       `Zufriedenheit ${bilanz.zufriedenheitSchnitt}. ${bilanz.u18Abgaenger} U18-Abgänger:innen wechseln zu den Aktiven, ` +
       `${bilanz.uebertritte} Übertritte in die nächste Stufe.` +
       (ruecktritte.length ? ` Rücktritte: ${ruecktritte.join(', ')}.` : '') +
+      (neueHilfsleiter.length ? ` Neu im Trainerpool (ehemalige U18): ${neueHilfsleiter.join(', ')} – teile sie einem Team zu.` : '') +
       (ohneTeam.length ? ` Achtung: keine Teams in ${ohneTeam.join(', ')}.` : ''),
     gelesen: false,
     wichtig: true
@@ -159,7 +198,7 @@ export function saisonAbschliessen(state: GameState, rng: Rng): SaisonBilanz {
     }
   }
 
-  // Spielende
+  // Spielende nach der gewählten Laufzeit
   const gespielt = state.saison - 1;
   if (gespielt >= state.laufzeit || gespielt >= B.spiel.etappeMaxSaisons) {
     const grund = gespielt >= state.laufzeit ? 'laufzeit' : 'etappenEnde';
@@ -167,11 +206,13 @@ export function saisonAbschliessen(state: GameState, rng: Rng): SaisonBilanz {
       grund,
       punkte: bilanz.bewertung,
       titel: bilanz.titel,
+      endbewertung: eb,
       text:
         grund === 'laufzeit'
-          ? `Deine Amtszeit ist vorbei. Endbewertung: ${bilanz.bewertung} Punkte – «${bilanz.titel}».`
-          : `Ende der spielbaren Version (Etappe 1). Vorläufige Bewertung nach ${gespielt} Saison: ${bilanz.bewertung} Punkte – «${bilanz.titel}». Die weiteren Saisons folgen in den nächsten Etappen.`
+          ? `Deine Amtszeit ist nach ${gespielt} Saison${gespielt === 1 ? '' : 's'} vorbei. Endbewertung: ${bilanz.bewertung} von 100 Punkten – «${bilanz.titel}».`
+          : `Ende der spielbaren Version nach ${gespielt} Saison${gespielt === 1 ? '' : 's'}. Bewertung: ${bilanz.bewertung} von 100 Punkten – «${bilanz.titel}».`
     };
+    chronik(state, 'verein', state.spielende.text);
   }
   return bilanz;
 }

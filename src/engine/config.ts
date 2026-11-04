@@ -8,7 +8,9 @@ import namen from '../content/namen.json';
 import charakterzuege from '../content/charakterzuege.json';
 import ereignisse from '../content/ereignisse.json';
 import dialoge from '../content/dialoge.json';
-import type { ElternTyp, Phase, Schwerpunkt, Stufe, Ton } from './types';
+import aktivitaeten from '../content/aktivitaeten.json';
+import verein from '../content/verein.json';
+import type { Amt, ElternTyp, Phase, Prioritaet, Schwerpunkt, Stufe, Ton } from './types';
 
 export const B = balancing;
 export type Balancing = typeof balancing;
@@ -108,7 +110,7 @@ export function schwerpunktConfig(s: Schwerpunkt) {
 // ---------- Ereignisvorlagen ----------
 
 export interface Bedingung {
-  typ: 'beteiligterWert' | 'trainerZug' | 'teamFlag' | 'materialNiveau' | 'schwerpunkt' | 'teamFahrdienst';
+  typ: 'beteiligterWert' | 'trainerZug' | 'teamFlag' | 'materialNiveau' | 'schwerpunkt' | 'teamFahrdienst' | 'rufAb';
   rolle?: string;
   wert?: string;
   ab?: number;
@@ -140,7 +142,7 @@ export interface Effekt {
 
 export interface BeteiligterDef {
   rolle: string;
-  art: 'team' | 'trainer' | 'kind' | 'elternteil';
+  art: 'team' | 'trainer' | 'kind' | 'elternteil' | 'vorstand';
   auswahl: string;
   aus?: string;
   optional?: boolean;
@@ -172,7 +174,11 @@ export interface EreignisVorlage {
     ferien?: 'nur' | 'nie';
     proTeam?: boolean;
     modifikatoren?: Bedingung[];
+    /** Sonderregel für die Auslösung (Etappe 3) */
+    bedingung?: 'sponsorAnfrage' | 'nichtLernmodus';
   };
+  /** legt beim Auslösen ein Objekt an (Etappe 3) */
+  erzeugt?: 'sponsorAngebot';
   beteiligte: BeteiligterDef[];
   optionen: OptionDef[];
   standardOption: string;
@@ -209,7 +215,13 @@ export interface DialogBedingung {
     | 'haupttrainer'
     | 'belastungAb'
     | 'teamFlag'
-    | 'nichtTeamFlag';
+    | 'nichtTeamFlag'
+    | 'amt'
+    | 'haltungAb'
+    | 'haltungUnter'
+    | 'einflussAb'
+    | 'kasseUnter'
+    | 'prioritaet';
   wert?: string | number;
 }
 
@@ -238,7 +250,7 @@ export interface KnotenDef {
 export interface DialogDef {
   id: string;
   titel: string;
-  art: 'elternteil' | 'kind' | 'trainer';
+  art: 'elternteil' | 'kind' | 'trainer' | 'vorstand';
   beschreibung: string;
   /** aktiv aus dem Personen-Detail startbar */
   manuell: boolean;
@@ -253,4 +265,40 @@ export function dialogDef(id: string): DialogDef {
   const d = DIALOGE.find((x) => x.id === id);
   if (!d) throw new Error(`Unbekannter Dialog ${id}`);
   return d;
+}
+
+// ---------- Etappe 3 ----------
+
+export interface AktivitaetDef {
+  id: string;
+  name: string;
+  beschreibung: string;
+  vorbereitung: number;
+  helfer: number;
+  kosten: number;
+  ertrag: number[];
+  phasen: Phase[];
+  ruf: number;
+  proKind?: boolean;
+  proReichweite?: boolean;
+  rufAbhaengig?: boolean;
+  gesuch?: boolean;
+  kinderZufriedenheit?: number;
+  risiko?: { wahrscheinlichkeit: number; ertragFaktor: number; text: string };
+}
+export const AKTIVITAETEN = aktivitaeten.aktivitaeten as unknown as AktivitaetDef[];
+export function aktivitaetDef(id: string): AktivitaetDef {
+  const a = AKTIVITAETEN.find((x) => x.id === id);
+  if (!a) throw new Error(`Unbekannte Aktivität ${id}`);
+  return a;
+}
+
+export const AEMTER = verein.aemter as { id: Amt; name: string }[];
+export const PRIORITAETEN = verein.prioritaeten as { id: Prioritaet; name: string }[];
+export const SPONSOR_FIRMEN: { name: string; branche: string }[] = verein.sponsoren;
+export function amtName(a: Amt): string {
+  return AEMTER.find((x) => x.id === a)?.name ?? a;
+}
+export function prioritaetName(p: Prioritaet): string {
+  return PRIORITAETEN.find((x) => x.id === p)?.name ?? p;
 }

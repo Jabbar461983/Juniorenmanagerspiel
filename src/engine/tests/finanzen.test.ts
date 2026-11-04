@@ -59,14 +59,15 @@ describe('Buchungen', () => {
     expect(r.report.fehler.length).toBeGreaterThan(0);
   });
 
-  it('warnt, wenn die Kasse zwei Wochen in Folge unter null ist', () => {
+  it('verlangt Massnahmen, wenn die Kasse zwei Wochen in Folge unter null ist', () => {
     let s = testSpiel(45);
     s.finanzen.kasse = -5000;
     s = simulateWeek(s, pflichtEntscheide(s)).state;
     expect(s.finanzen.wochenUnterNull).toBe(1);
-    expect(s.posteingang.some((n) => n.titel.includes('Kasse'))).toBe(false);
+    expect(s.ereignisse.some((e) => e.vorlageId === 'budget_massnahmen')).toBe(false);
     s = simulateWeek(s, pflichtEntscheide(s)).state;
     expect(s.finanzen.wochenUnterNull).toBe(2);
-    expect(s.posteingang.some((n) => n.titel.includes('Kasse'))).toBe(true);
+    expect(s.vorstand.konkursStufe).toBe(1);
+    expect(s.ereignisse.some((e) => e.vorlageId === 'budget_massnahmen' && e.pflicht)).toBe(true);
   });
 });

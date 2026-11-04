@@ -2227,6 +2227,898 @@
         }
       ],
       "standardOption": "weiter"
+    },
+    {
+      "id": "budget_massnahmen",
+      "titel": "Der Vorstand verlangt Massnahmen",
+      "absender": "Kassier:in",
+      "kategorie": "vorstand",
+      "text": "Die Kasse der Juniorenabteilung ist seit zwei Wochen im Minus. Der Vorstand verlangt einen Plan. Bleibt die Kasse lange im Minus, drohen Kürzungen und deine Absetzung.",
+      "pflicht": true,
+      "ausloeser": {
+        "wahrscheinlichkeit": 0,
+        "abkuehlung": 0
+      },
+      "beteiligte": [],
+      "optionen": [
+        {
+          "id": "sparen",
+          "text": "Sparprogramm: Material und Trainerentschädigung auf «tief»",
+          "effekte": [
+            {
+              "typ": "finanzEinstellung",
+              "aktion": "material",
+              "text": "tief"
+            },
+            {
+              "typ": "finanzEinstellung",
+              "aktion": "entschaedigung",
+              "text": "tief"
+            },
+            {
+              "typ": "trainerMotivation",
+              "ziel": "alleTrainer",
+              "wert": -1
+            },
+            {
+              "typ": "rettungsplan"
+            },
+            {
+              "typ": "haltung",
+              "ziel": "alleVorstand",
+              "wert": 3
+            }
+          ],
+          "folge": "Der Vorstand nimmt das Sparprogramm zur Kenntnis. Die Trainer:innen sind wenig begeistert."
+        },
+        {
+          "id": "aktion",
+          "text": "Eine Geldbeschaffungsaktion planen (unter Finanzen starten)",
+          "effekte": [
+            {
+              "typ": "rettungsplan"
+            },
+            {
+              "typ": "haltung",
+              "ziel": "alleVorstand",
+              "wert": 2
+            }
+          ],
+          "folge": "Der Vorstand erwartet die Aktion in den nächsten Wochen."
+        },
+        {
+          "id": "ueberbrueckung",
+          "text": "Den Vorstand um eine Überbrückung bitten (CHF 1’500)",
+          "effekte": [
+            {
+              "typ": "kasse",
+              "wert": 1500,
+              "text": "Überbrückung Gesamtverein"
+            },
+            {
+              "typ": "einfluss",
+              "wert": -6
+            },
+            {
+              "typ": "kuerzung",
+              "wert": 0.1
+            }
+          ],
+          "folge": "Die Überbrückung kommt – sie wird vom nächsten Jahresbudget abgezogen."
+        },
+        {
+          "id": "ignorieren",
+          "text": "Das wird schon wieder",
+          "effekte": [
+            {
+              "typ": "einfluss",
+              "wert": -5
+            },
+            {
+              "typ": "haltung",
+              "ziel": "alleVorstand",
+              "wert": -5
+            }
+          ],
+          "folge": "Der Vorstand ist irritiert."
+        }
+      ],
+      "standardOption": "ignorieren"
+    },
+    {
+      "id": "budgetkuerzung_verein",
+      "titel": "Defizit im Gesamtverein",
+      "absender": "Präsident:in",
+      "kategorie": "vorstand",
+      "text": "Der Gesamtverein schreibt ein Defizit. Der Vorstand verlangt, dass die Juniorenabteilung CHF 1’500 beisteuert. Wo sparst du?",
+      "pflicht": true,
+      "ausloeser": {
+        "wahrscheinlichkeit": 0.025,
+        "abkuehlung": 40,
+        "phasen": [
+          "meisterschaft",
+          "playoffs"
+        ]
+      },
+      "beteiligte": [
+        {
+          "rolle": "vorstand",
+          "art": "vorstand",
+          "auswahl": "amt:praesidium"
+        }
+      ],
+      "optionen": [
+        {
+          "id": "zahlen",
+          "text": "Den Betrag aus der Kasse zahlen",
+          "effekte": [
+            {
+              "typ": "kasse",
+              "wert": -1500,
+              "text": "Beitrag an Defizit Gesamtverein"
+            },
+            {
+              "typ": "haltung",
+              "ziel": "alleVorstand",
+              "wert": 3
+            }
+          ],
+          "folge": "Der Vorstand ist dankbar."
+        },
+        {
+          "id": "material",
+          "text": "Beim Material sparen und CHF 600 zahlen",
+          "effekte": [
+            {
+              "typ": "kasse",
+              "wert": -600,
+              "text": "Beitrag an Defizit Gesamtverein"
+            },
+            {
+              "typ": "finanzEinstellung",
+              "aktion": "material",
+              "text": "tief"
+            },
+            {
+              "typ": "zufriedenheit",
+              "ziel": "alleKinder",
+              "wert": -1
+            }
+          ],
+          "folge": "Das Material wird knapper."
+        },
+        {
+          "id": "entschaedigung",
+          "text": "Bei der Trainerentschädigung sparen und CHF 600 zahlen",
+          "effekte": [
+            {
+              "typ": "kasse",
+              "wert": -600,
+              "text": "Beitrag an Defizit Gesamtverein"
+            },
+            {
+              "typ": "finanzEinstellung",
+              "aktion": "entschaedigung",
+              "text": "tief"
+            },
+            {
+              "typ": "trainerMotivation",
+              "ziel": "alleTrainer",
+              "wert": -2
+            }
+          ],
+          "folge": "Die Trainer:innen sind enttäuscht."
+        },
+        {
+          "id": "verhandeln",
+          "text": "Mit {vorstand.vorname} verhandeln",
+          "dialog": "vorstand_kuerzung",
+          "dialogPerson": "vorstand",
+          "effekte": [],
+          "folge": "Die Verhandlung hat stattgefunden."
+        }
+      ],
+      "standardOption": "zahlen"
+    },
+    {
+      "id": "sponsor_anfrage",
+      "titel": "Sponsoringangebot",
+      "absender": "{sponsor}",
+      "kategorie": "chance",
+      "text": "{sponsor} möchte die Junioren unterstützen: {betrag} pro Saison für {laufzeit}. Gegenleistung: {gegenleistung}.",
+      "pflicht": false,
+      "erzeugt": "sponsorAngebot",
+      "ausloeser": {
+        "wahrscheinlichkeit": 0.02,
+        "abkuehlung": 6,
+        "bedingung": "sponsorAnfrage"
+      },
+      "beteiligte": [],
+      "optionen": [
+        {
+          "id": "annehmen",
+          "text": "Vertrag unterschreiben",
+          "effekte": [
+            {
+              "typ": "sponsorAnnehmen"
+            }
+          ],
+          "folge": "Der Vertrag ist unterschrieben. Achte auf die Gegenleistung."
+        },
+        {
+          "id": "ablehnen",
+          "text": "Ablehnen",
+          "effekte": [
+            {
+              "typ": "sponsorAblehnen"
+            }
+          ],
+          "folge": "Du lehnst das Angebot ab."
+        }
+      ],
+      "standardOption": "ablehnen"
+    },
+    {
+      "id": "sponsor_elternteil",
+      "titel": "Sponsoring aus der Elternschaft",
+      "absender": "{elternteil}",
+      "kategorie": "chance",
+      "text": "{elternteil} bietet an, dass die eigene Firma die Junioren sponsert: {betrag} pro Saison für {laufzeit}. Nebenbei fällt der Satz: «{kind.vorname} würde sich über mehr Einsatz sicher freuen.»",
+      "pflicht": false,
+      "erzeugt": "sponsorAngebot",
+      "ausloeser": {
+        "wahrscheinlichkeit": 0.03,
+        "abkuehlung": 15
+      },
+      "beteiligte": [
+        {
+          "rolle": "elternteil",
+          "art": "elternteil",
+          "auswahl": "sponsorOhneVertrag"
+        },
+        {
+          "rolle": "kind",
+          "art": "kind",
+          "auswahl": "vonElternteil",
+          "aus": "elternteil"
+        },
+        {
+          "rolle": "team",
+          "art": "team",
+          "auswahl": "vonKind",
+          "aus": "kind"
+        }
+      ],
+      "offenbart": [
+        {
+          "rolle": "elternteil",
+          "info": "typ"
+        }
+      ],
+      "optionen": [
+        {
+          "id": "klaeren",
+          "text": "Annehmen und klarstellen: Einsatzzeit ist nicht verhandelbar",
+          "effekte": [
+            {
+              "typ": "sponsorAnnehmen"
+            },
+            {
+              "typ": "teamFlag",
+              "ziel": "team",
+              "flag": "einsatzregeln",
+              "wert": true
+            },
+            {
+              "typ": "elternStimmung",
+              "ziel": "elternteil",
+              "wert": -3
+            }
+          ],
+          "folge": "Der Vertrag steht – mit klaren Regeln."
+        },
+        {
+          "id": "annehmen",
+          "text": "Dankend annehmen",
+          "effekte": [
+            {
+              "typ": "sponsorAnnehmen"
+            },
+            {
+              "typ": "elternStimmung",
+              "ziel": "elternteil",
+              "wert": 5
+            }
+          ],
+          "folge": "Der Vertrag steht. Andere Eltern beobachten genau, wie viel {kind.vorname} spielt."
+        },
+        {
+          "id": "ablehnen",
+          "text": "Ablehnen",
+          "effekte": [
+            {
+              "typ": "sponsorAblehnen"
+            },
+            {
+              "typ": "elternStimmung",
+              "ziel": "elternteil",
+              "wert": -6
+            }
+          ],
+          "folge": "{elternteil.vorname} ist vor den Kopf gestossen."
+        }
+      ],
+      "standardOption": "ablehnen"
+    },
+    {
+      "id": "post_ohne_einwilligung",
+      "titel": "Bild ohne Einwilligung",
+      "absender": "{elternteil}",
+      "kategorie": "konflikt",
+      "text": "{elternteil} ist empört: Auf dem Vereinsaccount ist ein Bild mit {kind.vorname} aufgetaucht – ohne Einwilligung der Eltern.",
+      "pflicht": true,
+      "ausloeser": {
+        "wahrscheinlichkeit": 0,
+        "abkuehlung": 0
+      },
+      "beteiligte": [],
+      "optionen": [
+        {
+          "id": "loeschen",
+          "text": "Sofort löschen und sich entschuldigen",
+          "effekte": [
+            {
+              "typ": "elternStimmung",
+              "ziel": "elternteil",
+              "wert": -3
+            },
+            {
+              "typ": "ruf",
+              "wert": -1
+            }
+          ],
+          "folge": "Das Bild ist weg. {elternteil.vorname} ist besänftigt, aber vorsichtig."
+        },
+        {
+          "id": "prozess",
+          "text": "Löschen und künftig Einwilligungen konsequent prüfen",
+          "effekte": [
+            {
+              "typ": "elternStimmung",
+              "ziel": "elternteil",
+              "wert": 1
+            },
+            {
+              "typ": "elternStimmung",
+              "ziel": "teamEltern",
+              "wert": 1
+            },
+            {
+              "typ": "chronik",
+              "text": "Nach einem Bild ohne Einwilligung prüfen die Junioren Einwilligungen konsequent."
+            }
+          ],
+          "folge": "Die Eltern schätzen, dass du aus dem Fehler lernst."
+        },
+        {
+          "id": "ignorieren",
+          "text": "Ist doch nur ein Bild",
+          "effekte": [
+            {
+              "typ": "elternStimmung",
+              "ziel": "elternteil",
+              "wert": -15
+            },
+            {
+              "typ": "ruf",
+              "wert": -5
+            },
+            {
+              "typ": "austrittsRisiko",
+              "ziel": "familieKinder",
+              "wert": 0.15
+            }
+          ],
+          "folge": "{elternteil.vorname} erzählt es überall herum."
+        }
+      ],
+      "standardOption": "loeschen"
+    },
+    {
+      "id": "negativer_post",
+      "titel": "Negativer Post über die Junioren",
+      "absender": "Kommunikation",
+      "kategorie": "konflikt",
+      "text": "{elternteil} hat öffentlich einen kritischen Post über die Juniorenabteilung geschrieben. Er wird geteilt und kommentiert.",
+      "pflicht": true,
+      "ausloeser": {
+        "wahrscheinlichkeit": 0.12,
+        "abkuehlung": 8
+      },
+      "beteiligte": [
+        {
+          "rolle": "elternteil",
+          "art": "elternteil",
+          "auswahl": "kritikerUnzufrieden"
+        },
+        {
+          "rolle": "kind",
+          "art": "kind",
+          "auswahl": "vonElternteil",
+          "aus": "elternteil"
+        },
+        {
+          "rolle": "team",
+          "art": "team",
+          "auswahl": "vonKind",
+          "aus": "kind"
+        }
+      ],
+      "offenbart": [
+        {
+          "rolle": "elternteil",
+          "info": "typ"
+        }
+      ],
+      "optionen": [
+        {
+          "id": "sachlich",
+          "text": "Schnell, sachlich und freundlich öffentlich antworten",
+          "effekte": [
+            {
+              "typ": "ruf",
+              "wert": -1
+            },
+            {
+              "typ": "elternStimmung",
+              "ziel": "elternteil",
+              "wert": 3
+            },
+            {
+              "typ": "einfluss",
+              "wert": 1
+            }
+          ],
+          "folge": "Die ruhige Antwort kommt gut an."
+        },
+        {
+          "id": "gespraech",
+          "text": "Persönlich mit {elternteil.vorname} reden",
+          "dialog": "eltern_kritik",
+          "dialogPerson": "elternteil",
+          "effekte": [],
+          "folge": "Das Gespräch hat stattgefunden."
+        },
+        {
+          "id": "loeschen",
+          "text": "Löschung verlangen",
+          "effekte": [
+            {
+              "typ": "ruf",
+              "wert": -4
+            },
+            {
+              "typ": "elternStimmung",
+              "ziel": "elternteil",
+              "wert": -10
+            },
+            {
+              "typ": "reichweite",
+              "wert": -3
+            }
+          ],
+          "folge": "Die Löschforderung sorgt erst recht für Aufmerksamkeit."
+        },
+        {
+          "id": "ignorieren",
+          "text": "Nicht reagieren",
+          "effekte": [
+            {
+              "typ": "ruf",
+              "wert": -5
+            },
+            {
+              "typ": "einfluss",
+              "wert": -3
+            }
+          ],
+          "folge": "Der Post bleibt unwidersprochen stehen."
+        }
+      ],
+      "standardOption": "ignorieren"
+    },
+    {
+      "id": "lokalzeitung",
+      "titel": "Anfrage der Lokalzeitung",
+      "absender": "Lokalzeitung",
+      "kategorie": "chance",
+      "text": "Die Lokalzeitung möchte über {team} berichten und im Training Fotos machen.",
+      "pflicht": false,
+      "ausloeser": {
+        "wahrscheinlichkeit": 0.03,
+        "abkuehlung": 20
+      },
+      "beteiligte": [
+        {
+          "rolle": "team",
+          "art": "team",
+          "auswahl": "mitTraining"
+        }
+      ],
+      "optionen": [
+        {
+          "id": "einwilligung",
+          "text": "Zusagen – Fotos nur von Kindern mit Einwilligung",
+          "effekte": [
+            {
+              "typ": "ruf",
+              "wert": 4
+            },
+            {
+              "typ": "reichweite",
+              "wert": 5
+            },
+            {
+              "typ": "zufriedenheit",
+              "ziel": "teamKinder",
+              "wert": 2
+            },
+            {
+              "typ": "chronik",
+              "text": "Die Lokalzeitung berichtet über {team}."
+            }
+          ],
+          "folge": "Ein schöner Artikel – und alle Einwilligungen sind respektiert."
+        },
+        {
+          "id": "ohneFotos",
+          "text": "Zusagen, aber ohne Fotos von Kindern",
+          "effekte": [
+            {
+              "typ": "ruf",
+              "wert": 2
+            }
+          ],
+          "folge": "Ein kurzer Text erscheint."
+        },
+        {
+          "id": "absagen",
+          "text": "Absagen",
+          "effekte": [],
+          "folge": "Kein Artikel."
+        }
+      ],
+      "standardOption": "absagen"
+    },
+    {
+      "id": "aktivmannschaft_halle",
+      "titel": "Aktive wollen mehr Hallenzeit",
+      "absender": "{vorstand}",
+      "kategorie": "vorstand",
+      "text": "{vorstand} möchte für die Aktivmannschaft zusätzliche Hallenzeit – auf Kosten der Junioren.",
+      "pflicht": false,
+      "ausloeser": {
+        "wahrscheinlichkeit": 0.03,
+        "abkuehlung": 20,
+        "phasen": [
+          "trainingsstart",
+          "meisterschaft"
+        ]
+      },
+      "beteiligte": [
+        {
+          "rolle": "vorstand",
+          "art": "vorstand",
+          "auswahl": "amt:sportchef"
+        }
+      ],
+      "optionen": [
+        {
+          "id": "nachgeben",
+          "text": "Nachgeben",
+          "effekte": [
+            {
+              "typ": "haltung",
+              "ziel": "vorstand",
+              "wert": 8
+            },
+            {
+              "typ": "zufriedenheit",
+              "ziel": "alleKinder",
+              "wert": -2
+            }
+          ],
+          "folge": "Die Aktiven sind zufrieden, die Junioren trainieren enger."
+        },
+        {
+          "id": "kompromiss",
+          "text": "Kompromiss: ein Abend alle zwei Wochen",
+          "effekte": [
+            {
+              "typ": "haltung",
+              "ziel": "vorstand",
+              "wert": 3
+            },
+            {
+              "typ": "zufriedenheit",
+              "ziel": "alleKinder",
+              "wert": -1
+            }
+          ],
+          "folge": "Ein tragbarer Kompromiss."
+        },
+        {
+          "id": "gespraech",
+          "text": "Mit {vorstand.vorname} reden",
+          "dialog": "vorstand_sportchef",
+          "dialogPerson": "vorstand",
+          "effekte": [],
+          "folge": "Das Gespräch hat stattgefunden."
+        },
+        {
+          "id": "ablehnen",
+          "text": "Ablehnen",
+          "effekte": [
+            {
+              "typ": "haltung",
+              "ziel": "vorstand",
+              "wert": -8
+            },
+            {
+              "typ": "einfluss",
+              "wert": -2
+            }
+          ],
+          "folge": "{vorstand.vorname} ist verärgert."
+        }
+      ],
+      "standardOption": "kompromiss"
+    },
+    {
+      "id": "vorstand_kritik",
+      "titel": "Kritik an den Junioren-Ausgaben",
+      "absender": "{vorstand}",
+      "kategorie": "vorstand",
+      "text": "{vorstand} kritisiert in der Vorstandssitzung, die Junioren würden zu viel Geld ausgeben.",
+      "pflicht": false,
+      "ausloeser": {
+        "wahrscheinlichkeit": 0.05,
+        "abkuehlung": 10
+      },
+      "beteiligte": [
+        {
+          "rolle": "vorstand",
+          "art": "vorstand",
+          "auswahl": "skeptisch"
+        }
+      ],
+      "optionen": [
+        {
+          "id": "zahlen",
+          "text": "Mit Zahlen und Kennzahlen antworten",
+          "effekte": [
+            {
+              "typ": "vorbereitung",
+              "wert": 5
+            },
+            {
+              "typ": "haltung",
+              "ziel": "vorstand",
+              "wert": 3
+            }
+          ],
+          "folge": "Die Fakten überzeugen zumindest teilweise."
+        },
+        {
+          "id": "gespraech",
+          "text": "Das persönliche Gespräch suchen",
+          "dialog": "vorstand_kennenlernen",
+          "dialogPerson": "vorstand",
+          "effekte": [],
+          "folge": "Das Gespräch hat stattgefunden."
+        },
+        {
+          "id": "konter",
+          "text": "Scharf kontern",
+          "effekte": [
+            {
+              "typ": "haltung",
+              "ziel": "vorstand",
+              "wert": -6
+            },
+            {
+              "typ": "einfluss",
+              "wert": -2
+            }
+          ],
+          "folge": "Die Sitzung wird ungemütlich."
+        }
+      ],
+      "standardOption": "zahlen"
+    },
+    {
+      "id": "trainer_meldet_sich",
+      "titel": "Interesse am Trainerjob",
+      "absender": "E-Mail",
+      "kategorie": "chance",
+      "text": "Eine Person hat von den Junioren gehört und möchte als Trainer:in mithelfen.",
+      "pflicht": false,
+      "ausloeser": {
+        "wahrscheinlichkeit": 0.03,
+        "abkuehlung": 10,
+        "modifikatoren": [
+          {
+            "typ": "rufAb",
+            "ab": 60,
+            "faktor": 2
+          }
+        ]
+      },
+      "beteiligte": [],
+      "optionen": [
+        {
+          "id": "aufnehmen",
+          "text": "Zum Probetraining einladen und aufnehmen",
+          "effekte": [
+            {
+              "typ": "neuerTrainer"
+            }
+          ],
+          "folge": "Eine neue Person ist im Trainerpool."
+        },
+        {
+          "id": "spaeter",
+          "text": "Auf später vertrösten",
+          "effekte": [],
+          "folge": "Die Person meldet sich nicht mehr."
+        }
+      ],
+      "standardOption": "spaeter"
+    },
+    {
+      "id": "gemeinde_ferienpass",
+      "titel": "Ferienpass der Gemeinde",
+      "absender": "Gemeinde",
+      "kategorie": "chance",
+      "text": "Die Gemeinde fragt, ob die Junioren einen Ferienpass-Nachmittag anbieten. {trainer} hätte Zeit.",
+      "pflicht": false,
+      "ausloeser": {
+        "wahrscheinlichkeit": 0.05,
+        "abkuehlung": 30,
+        "phasen": [
+          "vorbereitung",
+          "abschluss"
+        ]
+      },
+      "beteiligte": [
+        {
+          "rolle": "trainer",
+          "art": "trainer",
+          "auswahl": "beliebig"
+        }
+      ],
+      "optionen": [
+        {
+          "id": "zusagen",
+          "text": "Zusagen",
+          "effekte": [
+            {
+              "typ": "trainerBelastung",
+              "ziel": "trainer",
+              "wert": 8
+            },
+            {
+              "typ": "schnupperKinder",
+              "anzahl": [
+                2,
+                5
+              ],
+              "alter": [
+                7,
+                12
+              ]
+            },
+            {
+              "typ": "ruf",
+              "wert": 3
+            },
+            {
+              "typ": "chronik",
+              "text": "Ferienpass-Nachmittag mit den Junioren."
+            }
+          ],
+          "folge": "Viele Kinder probieren Streethockey aus."
+        },
+        {
+          "id": "absagen",
+          "text": "Absagen",
+          "effekte": [],
+          "folge": "Schade."
+        }
+      ],
+      "standardOption": "absagen"
+    },
+    {
+      "id": "spende",
+      "titel": "Spende für die Junioren",
+      "absender": "Präsident:in",
+      "kategorie": "chance",
+      "text": "An einem Vereinsanlass wurde für die Junioren gesammelt: CHF 800. Wie willst du das Geld einsetzen?",
+      "pflicht": false,
+      "ausloeser": {
+        "wahrscheinlichkeit": 0.015,
+        "abkuehlung": 30,
+        "modifikatoren": [
+          {
+            "typ": "rufAb",
+            "ab": 60,
+            "faktor": 2
+          }
+        ]
+      },
+      "beteiligte": [],
+      "optionen": [
+        {
+          "id": "kasse",
+          "text": "In die Kasse",
+          "effekte": [
+            {
+              "typ": "kasse",
+              "wert": 800,
+              "text": "Spende"
+            },
+            {
+              "typ": "chronik",
+              "text": "Spende von CHF 800 für die Junioren."
+            }
+          ],
+          "folge": "Danke!"
+        },
+        {
+          "id": "material",
+          "text": "Zweckgebunden für neues Material",
+          "effekte": [
+            {
+              "typ": "kasse",
+              "wert": 800,
+              "text": "Spende"
+            },
+            {
+              "typ": "finanzEinstellung",
+              "aktion": "material",
+              "text": "hoch"
+            },
+            {
+              "typ": "zufriedenheit",
+              "ziel": "alleKinder",
+              "wert": 2
+            }
+          ],
+          "folge": "Neues Material für alle – ab jetzt auf «hoch»."
+        },
+        {
+          "id": "lager",
+          "text": "Zuschuss für ein Trainingsweekend",
+          "effekte": [
+            {
+              "typ": "kasse",
+              "wert": 300,
+              "text": "Spende (Rest)"
+            },
+            {
+              "typ": "zufriedenheit",
+              "ziel": "alleKinder",
+              "wert": 4
+            },
+            {
+              "typ": "ruf",
+              "wert": 1
+            }
+          ],
+          "folge": "Das Weekend wird ein Highlight."
+        }
+      ],
+      "standardOption": "kasse"
     }
   ]
 }

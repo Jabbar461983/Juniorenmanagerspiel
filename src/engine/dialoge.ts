@@ -8,7 +8,8 @@
 //
 // Bedingungen (DialogBedingung.typ): vertrauenAb, vertrauenUnter, bekannt, nichtBekannt,
 //   elternTyp, einkommen, hatTeam, teamPlatz, keinTrainer, helfer, keinHelfer, bereitschaftAb,
-//   ausstand, erfahrungAb, haupttrainer, belastungAb, teamFlag, nichtTeamFlag
+//   ausstand, erfahrungAb, haupttrainer, belastungAb, teamFlag, nichtTeamFlag,
+//   Etappe 3: amt, prioritaet, haltungAb, haltungUnter, einflussAb, kasseUnter
 import { B, DIALOGE, dialogDef, type AntwortDef, type DialogBedingung, type DialogDef, type Effekt, type KnotenDef } from './config';
 import { ersetzePlatzhalter } from './ereignisse';
 import { absoluteWoche } from './kalender';
@@ -17,7 +18,7 @@ import type { Beteiligte, Elternteil, GameState, Id, Person, Ton } from './types
 import { clamp } from './util';
 
 export function personVon(state: GameState, id: Id): Person | undefined {
-  return state.kinder[id] ?? state.eltern[id] ?? state.trainer[id];
+  return state.kinder[id] ?? state.eltern[id] ?? state.trainer[id] ?? state.vorstand.mitglieder[id];
 }
 
 /** Bereitschaft eines Elternteils, als Helfer:in mitzuwirken (ca. 0–25). */
@@ -43,6 +44,10 @@ export function tonWirkung(p: Person, ton: Ton): number {
       w += mod?.[ton] ?? 0;
     }
   }
+  if (p.rolle === 'vorstand') {
+    const mod = (D.vorstandPrioritaet as Record<string, Partial<Record<Ton, number>>>)[p.prioritaet];
+    w += mod?.[ton] ?? 0;
+  }
   return w;
 }
 
@@ -60,7 +65,7 @@ export function dialogBeteiligte(state: GameState, dialog: DialogDef, personId: 
     if (p.teamId && !b['team']) b['team'] = p.teamId;
     const eltern = state.familien[p.familieId]?.elternIds[0];
     if (eltern && !b['elternteil']) b['elternteil'] = eltern;
-  } else {
+  } else if (p.rolle === 'trainer') {
     const teams = teamsVonTrainer(state, p.id);
     const haupt = teams.find((t) => t.trainer.some((x) => x.trainerId === p.id && x.rolle === 'haupttrainer')) ?? teams[0];
     if (haupt && !b['team']) b['team'] = haupt.id;
@@ -82,9 +87,21 @@ export function bedingungErfuellt(state: GameState, p: Person, b: Beteiligte, ve
     case 'elternTyp':
       return p.rolle === 'elternteil' && p.typ === c.wert;
     case 'einkommen': {
-      const famId = p.rolle === 'trainer' ? undefined : p.familieId;
+      const famId = p.rolle === 'kind' || p.rolle === 'elternteil' ? p.familieId : undefined;
       return !!famId && state.familien[famId]?.einkommen === c.wert;
     }
+    case 'amt':
+      return p.rolle === 'vorstand' && p.amt === c.wert;
+    case 'prioritaet':
+      return p.rolle === 'vorstand' && p.prioritaet === c.wert;
+    case 'haltungAb':
+      return p.rolle === 'vorstand' && p.haltung >= Number(c.wert);
+    case 'haltungUnter':
+      return p.rolle === 'vorstand' && p.haltung < Number(c.wert);
+    case 'einflussAb':
+      return state.verein.vorstandEinfluss >= Number(c.wert);
+    case 'kasseUnter':
+      return state.finanzen.kasse < Number(c.wert);
     case 'hatTeam':
       return !!team;
     case 'teamPlatz':

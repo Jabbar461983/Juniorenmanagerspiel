@@ -17,9 +17,12 @@ import type {
   Geschlecht,
   Hautton,
   Kind,
+  Amt,
+  Prioritaet,
   Qualifikation,
   Trainer,
-  TrainerSkills
+  TrainerSkills,
+  Vorstandsmitglied
 } from './types';
 import { clamp, neueId } from './util';
 
@@ -66,7 +69,8 @@ export function erzeugeFamilie(state: GameState, rng: Rng, opt: FamilieOptionen 
     ausstand: 0,
     saeumig: false,
     ratenzahlung: false,
-    getrennt: false
+    getrennt: false,
+    fotoEinwilligung: rng.chance(B.social.einwilligungWahrscheinlichkeit)
   };
   state.familien[familie.id] = familie;
   const famTon = hautton(rng, h);
@@ -310,6 +314,64 @@ export function trainerAusElternteil(state: GameState, rng: Rng, e: Elternteil):
     bekannt: [],
     gespraeche: []
   };
+  state.trainer[t.id] = t;
+  return t;
+}
+
+/** Vorstandsmitglied (Etappe 3) */
+export function erzeugeVorstandsmitglied(state: GameState, rng: Rng, amt: Amt, prioritaet: Prioritaet, haltung: number): Vorstandsmitglied {
+  const h = herkunftWaehlen(rng);
+  const g: Geschlecht = rng.chance(0.45) ? 'w' : 'm';
+  const a = rng.int(32, 70);
+  const m: Vorstandsmitglied = {
+    id: neueId(state, 'v'),
+    rolle: 'vorstand',
+    vorname: vorname(rng, h, g),
+    nachname: rng.pick(h.nachnamen),
+    geschlecht: g,
+    geburtsjahr: state.startJahr + state.saison - 1 - a,
+    herkunft: h.id,
+    portrait: { gruppe: portraitGruppe(a), geschlecht: g, hautton: hautton(rng, h), nummer: 0 },
+    charakterzuege: zuege(rng, ELTERN_ZUEGE, 1, 1),
+    beziehungen: [],
+    vertrauen: 0,
+    bekannt: [],
+    gespraeche: [],
+    amt,
+    haltung: clamp(Math.round(haltung), -100, 100),
+    prioritaet
+  };
+  return m;
+}
+
+/** Ehemalige:r U18-Junior:in wird Hilfsleiter:in (Trainerquelle «junior»). */
+export function trainerAusKind(state: GameState, rng: Rng, k: Kind): Trainer {
+  const a = alter(state, k);
+  const t: Trainer = {
+    id: neueId(state, 't'),
+    rolle: 'trainer',
+    vorname: k.vorname,
+    nachname: k.nachname,
+    geschlecht: k.geschlecht,
+    geburtsjahr: k.geburtsjahr,
+    herkunft: k.herkunft,
+    portrait: { ...k.portrait, gruppe: portraitGruppe(a) },
+    charakterzuege: zuege(rng, TRAINER_ZUEGE, 1, 1),
+    beziehungen: [],
+    skills: trainerSkillsFuerAlter(rng, a),
+    verfuegbarkeit: rng.int(1, 2),
+    belastung: 10,
+    motivation: clamp(Math.round(k.werte.motivation), 1, 20),
+    qualifikation: 'keine',
+    quelle: 'junior',
+    status: 'aktiv',
+    kindId: k.id,
+    absagenSaison: 0,
+    vertrauen: k.vertrauen,
+    bekannt: [],
+    gespraeche: []
+  };
+  t.skills.fachwissen = clamp(Math.round((t.skills.fachwissen + k.werte.spielverstaendnis) / 2), 1, 20);
   state.trainer[t.id] = t;
   return t;
 }

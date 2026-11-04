@@ -1,7 +1,10 @@
 // Schema-Version und Migrationen des Spielstands.
+import { B } from './config';
+import { Rng } from './rng';
 import type { GameState } from './types';
+import { erzeugeVorstand, leererVorstand } from './vorstand';
 
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 
 /**
  * Migrationen: Schlüssel = Ausgangsversion. Jede Funktion hebt einen Rohstand
@@ -31,6 +34,25 @@ const MIGRATIONEN: Record<number, (raw: Record<string, unknown>) => Record<strin
     }
     for (const t of personen('teams')) t['elternabende'] ??= 0;
     return { ...raw, schemaVersion: 2 };
+  },
+  // Etappe 2 → 3: Vorstand, Social Media, Sponsoren, Anlässe, Chronik, Lernmodus; Etappen-Ende aufheben
+  2: (raw) => {
+    const state = raw as unknown as GameState;
+    // eigener, vom Spiel-Zufall unabhängiger Generator, damit die Migration deterministisch ist
+    const rng = new Rng((state.seed ^ 0x5eed3) | 0);
+    state.vorstand = leererVorstand();
+    erzeugeVorstand(state, rng);
+    state.vorstand.einflussVerlauf.push({ saison: state.saison, woche: state.woche, wert: state.verein.vorstandEinfluss });
+    state.social = { reichweite: B.social.reichweiteStart, posts: [] };
+    state.sponsoren = [];
+    state.aktivitaeten = [];
+    state.chronik = [];
+    state.lernmodus = false;
+    state.sponsorSucheBis = 0;
+    for (const f of Object.values(state.familien)) f.fotoEinwilligung = rng.chance(B.social.einwilligungWahrscheinlichkeit);
+    // Spielstände, die mit dem Etappen-Ende aufgehört haben, laufen weiter
+    if (state.spielende?.grund === 'etappenEnde') delete state.spielende;
+    return { ...(state as unknown as Record<string, unknown>), schemaVersion: 3 };
   }
 };
 
@@ -43,7 +65,8 @@ export class SpielstandFehler extends Error {
 
 export function migriere(raw: unknown): GameState {
   if (typeof raw !== 'object' || raw === null) throw new SpielstandFehler('Kein gültiger Spielstand.');
-  let obj = raw as Record<string, unknown>;
+  // Kopie: Migrationen dürfen den übergebenen Rohstand nicht verändern
+  let obj = JSON.parse(JSON.stringify(raw)) as Record<string, unknown>;
   const roh = obj['schemaVersion'];
   if (typeof roh !== 'number') throw new SpielstandFehler('Spielstand ohne Schema-Version.');
   let version: number = roh;

@@ -1705,6 +1705,678 @@
           ]
         }
       }
+    },
+    {
+      "id": "vorstand_kennenlernen",
+      "titel": "Kennenlernen im Vorstand",
+      "art": "vorstand",
+      "beschreibung": "Ein erstes Gespräch. Mit Vertrauen erfährst du, was dem Vorstandsmitglied wichtig ist.",
+      "manuell": true,
+      "start": "k1",
+      "knoten": {
+        "k1": {
+          "text": "{vorstand} hat ein paar Minuten Zeit für dich.",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Was liegt dir im Verein besonders am Herzen?",
+              "ton": "empathisch",
+              "vertrauen": 3,
+              "offenbart": [
+                "prioritaet"
+              ],
+              "weiter": "k2"
+            },
+            {
+              "id": "b",
+              "text": "Ich möchte dir kurz zeigen, wie es den Junioren geht.",
+              "ton": "sachlich",
+              "effekte": [
+                {
+                  "typ": "haltung",
+                  "ziel": "vorstand",
+                  "wert": 3
+                }
+              ],
+              "weiter": "k3"
+            },
+            {
+              "id": "c",
+              "text": "Ich wollte nur kurz Hallo sagen.",
+              "ton": "ausweichend",
+              "ende": "Ein freundlicher, aber kurzer Austausch."
+            }
+          ]
+        },
+        "k2": {
+          "text": "«Ehrlich gesagt denke ich zuerst an …» {vorstand.vorname} erzählt ausführlich.",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Danke. Vielleicht finden wir da Gemeinsamkeiten.",
+              "ton": "empathisch",
+              "effekte": [
+                {
+                  "typ": "haltung",
+                  "ziel": "vorstand",
+                  "wert": 4
+                }
+              ],
+              "offenbart": [
+                "prioritaet"
+              ],
+              "ende": "Ihr habt einen guten Draht gefunden."
+            },
+            {
+              "id": "b",
+              "text": "Dann zeige ich dir, wie die Junioren dazu beitragen.",
+              "ton": "sachlich",
+              "effekte": [
+                {
+                  "typ": "haltung",
+                  "ziel": "vorstand",
+                  "wert": 3
+                },
+                {
+                  "typ": "vorbereitung",
+                  "wert": 3
+                }
+              ],
+              "offenbart": [
+                "prioritaet"
+              ],
+              "ende": "{vorstand.vorname} hört interessiert zu."
+            }
+          ]
+        },
+        "k3": {
+          "text": "«Interessant. Und was kostet das alles?»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Hier sind die Zahlen: Beiträge, Ausgaben und die Entwicklung der Mitglieder.",
+              "ton": "sachlich",
+              "effekte": [
+                {
+                  "typ": "haltung",
+                  "ziel": "vorstand",
+                  "wert": 4
+                },
+                {
+                  "typ": "vorbereitung",
+                  "wert": 4
+                }
+              ],
+              "ende": "{vorstand.vorname} ist beeindruckt von der Vorbereitung."
+            },
+            {
+              "id": "b",
+              "text": "Das schauen wir ein anderes Mal an.",
+              "ton": "ausweichend",
+              "effekte": [
+                {
+                  "typ": "haltung",
+                  "ziel": "vorstand",
+                  "wert": -3
+                }
+              ],
+              "ende": "{vorstand.vorname} wirkt skeptisch."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "vorstand_unterstuetzung",
+      "titel": "Unterstützung gewinnen",
+      "art": "vorstand",
+      "beschreibung": "Gespräch mit dem Präsidium vor der nächsten Sitzung.",
+      "manuell": true,
+      "bedingung": [
+        {
+          "typ": "amt",
+          "wert": "praesidium"
+        }
+      ],
+      "start": "k1",
+      "knoten": {
+        "k1": {
+          "text": "Du triffst {vorstand.vorname} vor der nächsten Vorstandssitzung.",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Ich möchte meine Anträge vorstellen, bevor sie in die Sitzung kommen.",
+              "ton": "sachlich",
+              "weiter": "k2"
+            },
+            {
+              "id": "b",
+              "text": "Mir ist wichtig, dass wir als Vorstand am selben Strick ziehen.",
+              "ton": "empathisch",
+              "weiter": "k3"
+            },
+            {
+              "id": "c",
+              "text": "Ich erwarte, dass du meine Anträge unterstützt.",
+              "ton": "bestimmt",
+              "effekte": [
+                {
+                  "typ": "haltung",
+                  "ziel": "vorstand",
+                  "wert": -5
+                }
+              ],
+              "ende": "{vorstand.vorname} reagiert kühl."
+            }
+          ]
+        },
+        "k2": {
+          "text": "«Gut vorbereitet, das schätze ich.»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Darf ich auf deine Stimme zählen?",
+              "ton": "sachlich",
+              "weiter": {
+                "vertrauenAb": 10,
+                "dann": "k4",
+                "sonst": "k5"
+              }
+            },
+            {
+              "id": "b",
+              "text": "Was bräuchtest du, um zuzustimmen?",
+              "ton": "empathisch",
+              "effekte": [
+                {
+                  "typ": "vorbereitung",
+                  "wert": 4
+                }
+              ],
+              "offenbart": [
+                "prioritaet"
+              ],
+              "ende": "Ihr findet einen gemeinsamen Nenner."
+            }
+          ]
+        },
+        "k3": {
+          "text": "«Das sehe ich auch so. Aber die Kasse ist knapp.»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Ich biete an, einen Teil selbst zu erwirtschaften.",
+              "ton": "sachlich",
+              "effekte": [
+                {
+                  "typ": "haltung",
+                  "ziel": "vorstand",
+                  "wert": 5
+                },
+                {
+                  "typ": "vorbereitung",
+                  "wert": 5
+                }
+              ],
+              "ende": "Das kommt gut an."
+            },
+            {
+              "id": "b",
+              "text": "Das wird schon.",
+              "ton": "ausweichend",
+              "effekte": [
+                {
+                  "typ": "haltung",
+                  "ziel": "vorstand",
+                  "wert": -2
+                }
+              ],
+              "ende": "{vorstand.vorname} bleibt zurückhaltend."
+            }
+          ]
+        },
+        "k4": {
+          "text": "«Ja, du hast meine Unterstützung.»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Danke!",
+              "ton": "empathisch",
+              "effekte": [
+                {
+                  "typ": "haltung",
+                  "ziel": "vorstand",
+                  "wert": 6
+                },
+                {
+                  "typ": "vorbereitung",
+                  "wert": 6
+                }
+              ],
+              "ende": "Mit dem Präsidium im Rücken steigen die Chancen in der Sitzung."
+            }
+          ]
+        },
+        "k5": {
+          "text": "«Ich entscheide in der Sitzung.»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Verstehe. Ich lege dir die Zahlen nochmals hin.",
+              "ton": "sachlich",
+              "effekte": [
+                {
+                  "typ": "vorbereitung",
+                  "wert": 3
+                }
+              ],
+              "ende": "Immerhin bist du gut vorbereitet."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "vorstand_kasse",
+      "titel": "Gespräch mit der Kasse",
+      "art": "vorstand",
+      "beschreibung": "Über Ausgaben, Einnahmen und Budgetdisziplin.",
+      "manuell": true,
+      "bedingung": [
+        {
+          "typ": "amt",
+          "wert": "kasse"
+        }
+      ],
+      "start": "k1",
+      "knoten": {
+        "k1": {
+          "text": "{vorstand.vorname} hat die Abrechnung der Junioren vor sich.",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Lass uns die Zahlen gemeinsam durchgehen.",
+              "ton": "sachlich",
+              "weiter": "k2"
+            },
+            {
+              "id": "b",
+              "text": "Ich weiss, dass dir die Finanzen Sorgen machen.",
+              "ton": "empathisch",
+              "weiter": "k2"
+            },
+            {
+              "id": "c",
+              "text": "Das Geld ist ja gut eingesetzt.",
+              "ton": "ausweichend",
+              "effekte": [
+                {
+                  "typ": "haltung",
+                  "ziel": "vorstand",
+                  "wert": -4
+                }
+              ],
+              "ende": "{vorstand.vorname} runzelt die Stirn."
+            }
+          ]
+        },
+        "k2": {
+          "text": "«Die Ausgaben steigen. Wie willst du das finanzieren?»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Mit einem Anlass und einem Sponsor. Ich zeige dir den Plan.",
+              "ton": "sachlich",
+              "effekte": [
+                {
+                  "typ": "haltung",
+                  "ziel": "vorstand",
+                  "wert": 5
+                },
+                {
+                  "typ": "vorbereitung",
+                  "wert": 4
+                },
+                {
+                  "typ": "rettungsplan"
+                }
+              ],
+              "ende": "Ein glaubwürdiger Plan beruhigt die Kasse."
+            },
+            {
+              "id": "b",
+              "text": "Kinder kosten nun mal Geld.",
+              "ton": "bestimmt",
+              "effekte": [
+                {
+                  "typ": "haltung",
+                  "ziel": "vorstand",
+                  "wert": -3
+                }
+              ],
+              "ende": "{vorstand.vorname} bleibt skeptisch."
+            },
+            {
+              "id": "c",
+              "text": "Ich spare beim Material, bis die Lage besser ist.",
+              "ton": "empathisch",
+              "effekte": [
+                {
+                  "typ": "finanzEinstellung",
+                  "aktion": "material",
+                  "text": "tief"
+                },
+                {
+                  "typ": "haltung",
+                  "ziel": "vorstand",
+                  "wert": 6
+                }
+              ],
+              "ende": "Das Material-Budget ist ab sofort tief."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "vorstand_sportchef",
+      "titel": "Junioren und Aktivmannschaft",
+      "art": "vorstand",
+      "beschreibung": "Gespräch mit der Sportchefin oder dem Sportchef über Nachwuchs und Hallenzeiten.",
+      "manuell": true,
+      "bedingung": [
+        {
+          "typ": "amt",
+          "wert": "sportchef"
+        }
+      ],
+      "start": "k1",
+      "knoten": {
+        "k1": {
+          "text": "«Die Aktiven brauchen Nachwuchs – aber auch Hallenzeit.»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Wir haben dasselbe Ziel: gute Spieler:innen für die Aktiven.",
+              "ton": "empathisch",
+              "weiter": "k2"
+            },
+            {
+              "id": "b",
+              "text": "Lass uns die Hallenzeiten fair aufteilen.",
+              "ton": "sachlich",
+              "weiter": "k3"
+            },
+            {
+              "id": "c",
+              "text": "Die Junioren gehen vor.",
+              "ton": "bestimmt",
+              "effekte": [
+                {
+                  "typ": "haltung",
+                  "ziel": "vorstand",
+                  "wert": -6
+                }
+              ],
+              "ende": "Die Stimmung ist frostig."
+            }
+          ]
+        },
+        "k2": {
+          "text": "«Wie viele aus der U18 wechseln diesen Sommer zu uns?»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Ich bereite die Übertritte gemeinsam mit dir vor.",
+              "ton": "sachlich",
+              "effekte": [
+                {
+                  "typ": "haltung",
+                  "ziel": "vorstand",
+                  "wert": 6
+                }
+              ],
+              "ende": "Ein gemeinsames Projekt verbindet."
+            },
+            {
+              "id": "b",
+              "text": "Wir könnten gemeinsame Trainings U18 und Aktive anbieten.",
+              "ton": "empathisch",
+              "effekte": [
+                {
+                  "typ": "haltung",
+                  "ziel": "vorstand",
+                  "wert": 5
+                }
+              ],
+              "ende": "Die Idee kommt gut an."
+            }
+          ]
+        },
+        "k3": {
+          "text": "«Ein Abend pro Woche gehört den Aktiven, der Rest bleibt bei euch.»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Einverstanden.",
+              "ton": "sachlich",
+              "effekte": [
+                {
+                  "typ": "haltung",
+                  "ziel": "vorstand",
+                  "wert": 4
+                }
+              ],
+              "ende": "Eine faire Lösung."
+            },
+            {
+              "id": "b",
+              "text": "Nur, wenn die Junioren dafür die günstigere Halle bekommen.",
+              "ton": "bestimmt",
+              "effekte": [
+                {
+                  "typ": "haltung",
+                  "ziel": "vorstand",
+                  "wert": -2
+                },
+                {
+                  "typ": "vorbereitung",
+                  "wert": 4
+                }
+              ],
+              "ende": "Ein harter, aber nützlicher Deal für die nächste Sitzung."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "vorstand_kommunikation",
+      "titel": "Junioren auf Social Media",
+      "art": "vorstand",
+      "beschreibung": "Gespräch mit der Kommunikation über mehr Sichtbarkeit der Junioren.",
+      "manuell": true,
+      "bedingung": [
+        {
+          "typ": "amt",
+          "wert": "kommunikation"
+        }
+      ],
+      "start": "k1",
+      "knoten": {
+        "k1": {
+          "text": "{vorstand.vorname} betreut die Kanäle des Vereins.",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Die Kinder freuen sich riesig, wenn sie online vorkommen.",
+              "ton": "empathisch",
+              "weiter": "k2"
+            },
+            {
+              "id": "b",
+              "text": "Mehr Inhalte über die Junioren bringen Mitglieder und Sponsoren.",
+              "ton": "sachlich",
+              "weiter": "k2"
+            },
+            {
+              "id": "c",
+              "text": "Mach einfach, wie du denkst.",
+              "ton": "ausweichend",
+              "ende": "Es bleibt alles beim Alten."
+            }
+          ]
+        },
+        "k2": {
+          "text": "«Gern – aber nur mit Einwilligung der Eltern und regelmässigen Inhalten von dir.»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Ich liefere jede Woche Material und kläre die Einwilligungen.",
+              "ton": "sachlich",
+              "effekte": [
+                {
+                  "typ": "haltung",
+                  "ziel": "vorstand",
+                  "wert": 8
+                },
+                {
+                  "typ": "reichweite",
+                  "wert": 3
+                }
+              ],
+              "ende": "Die Junioren erscheinen künftig öfter auf den Kanälen."
+            },
+            {
+              "id": "b",
+              "text": "Abgemacht. Danke für deine Unterstützung.",
+              "ton": "empathisch",
+              "effekte": [
+                {
+                  "typ": "haltung",
+                  "ziel": "vorstand",
+                  "wert": 5
+                }
+              ],
+              "ende": "Ein guter Anfang."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "vorstand_kuerzung",
+      "titel": "Verhandlung über die Budgetkürzung",
+      "art": "vorstand",
+      "beschreibung": "Der Gesamtverein will CHF 1’500 von den Junioren. Du verhandelst mit dem Präsidium.",
+      "manuell": false,
+      "start": "k1",
+      "knoten": {
+        "k1": {
+          "text": "«Der Verein braucht die CHF 1’500. Was schlägst du vor?»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Wir zahlen jetzt CHF 500 und erwirtschaften den Rest mit einem Anlass.",
+              "ton": "sachlich",
+              "effekte": [
+                {
+                  "typ": "kasse",
+                  "wert": -500,
+                  "text": "Beitrag an Defizit Gesamtverein"
+                },
+                {
+                  "typ": "rettungsplan"
+                },
+                {
+                  "typ": "haltung",
+                  "ziel": "vorstand",
+                  "wert": 2
+                }
+              ],
+              "ende": "Ihr einigt euch auf CHF 500 – plane den Anlass unter Finanzen."
+            },
+            {
+              "id": "b",
+              "text": "Die Kinder dürfen nicht darunter leiden. Können wir halbieren?",
+              "ton": "empathisch",
+              "weiter": {
+                "vertrauenAb": 5,
+                "dann": "k2",
+                "sonst": "k3"
+              }
+            },
+            {
+              "id": "c",
+              "text": "Die Junioren zahlen nichts.",
+              "ton": "bestimmt",
+              "effekte": [
+                {
+                  "typ": "einfluss",
+                  "wert": -4
+                },
+                {
+                  "typ": "haltung",
+                  "ziel": "vorstand",
+                  "wert": -5
+                },
+                {
+                  "typ": "kasse",
+                  "wert": -1500,
+                  "text": "Beitrag an Defizit Gesamtverein"
+                }
+              ],
+              "ende": "Der Vorstand setzt die Kürzung trotzdem durch."
+            }
+          ]
+        },
+        "k2": {
+          "text": "«Gut, CHF 750 – aber ich erwarte Sparsamkeit.»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Abgemacht.",
+              "ton": "sachlich",
+              "effekte": [
+                {
+                  "typ": "kasse",
+                  "wert": -750,
+                  "text": "Beitrag an Defizit Gesamtverein"
+                },
+                {
+                  "typ": "haltung",
+                  "ziel": "vorstand",
+                  "wert": 2
+                }
+              ],
+              "ende": "Ein Kompromiss."
+            }
+          ]
+        },
+        "k3": {
+          "text": "«Leider nein. Wir brauchen die volle Summe.»",
+          "antworten": [
+            {
+              "id": "a",
+              "text": "Dann tragen wir sie.",
+              "ton": "sachlich",
+              "effekte": [
+                {
+                  "typ": "kasse",
+                  "wert": -1500,
+                  "text": "Beitrag an Defizit Gesamtverein"
+                },
+                {
+                  "typ": "haltung",
+                  "ziel": "vorstand",
+                  "wert": 2
+                }
+              ],
+              "ende": "Die Junioren zahlen die volle Summe."
+            }
+          ]
+        }
+      }
     }
   ]
 }

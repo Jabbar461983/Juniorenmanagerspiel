@@ -64,7 +64,11 @@ export const KATEGORIE_NAMEN: Record<Buchung['kategorie'], string> = {
   trainerentschaedigung: 'Trainerentschädigung',
   anwerbung: 'Anwerbung',
   verbandsgebuehren: 'Verbandsgebühren',
-  vereinsbeitrag: 'Beitrag Gesamtverein',
+  vereinsbeitrag: 'Jahresbudget (GV)',
   ereignis: 'Ereignisse',
-  elternarbeit: 'Elternarbeit'
+  elternarbeit: 'Elternarbeit',
+  vorstand: 'Zuschüsse Vorstand',
+  sponsoren: 'Sponsoren',
+  anlaesse: 'Anlässe und Aktionen',
+  socialmedia: 'Social Media'
 };

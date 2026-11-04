@@ -4,7 +4,12 @@ import { aktuelleWoche } from './kalender';
 import { alter, name, stufeFuerAlter, teamKinder, teamsDerStufe } from './personen';
 import type { Entscheid, GameState, Stufe, Team } from './types';
 import { STUFEN, TRAINER_ROLLEN } from './types';
-import { loeseEreignis, wendeEffekteAn, type EffektKontext } from './ereignisse';
+import { erstelleInstanz, loeseEreignis, wendeEffekteAn, type EffektKontext } from './ereignisse';
+import { ereignisVorlage, aktivitaetDef } from './config';
+import { neuerAntrag } from './vorstand';
+import { aktivitaetMoeglich, aktivitaetStarten } from './anlaesse';
+import { postVeroeffentlichen } from './social';
+import { absoluteWoche } from './kalender';
 import { dialogAbkuehlungAktiv, dialogAuswerten, personVon } from './dialoge';
 import { elternabend } from './eltern';
 import { offenbare } from './infos';
@@ -83,6 +88,8 @@ export function wendeEntscheideAn(
   const anwerbungen: AnwerbungAuftrag[] = [];
   let gespraeche = 0;
   const gespraechMitPerson = new Set<string>();
+  let posts = 0;
+  let vorbereitet = false;
 
   for (const e of entscheide) {
     switch (e.typ) {
@@ -287,6 +294,63 @@ export function wendeEntscheideAn(
         elternabend(state, team, aktuelleWoche(state), ctx.buchungen, ctx.meldungen, ereignisKontext !== null);
         break;
       }
+      case 'antrag': {
+        if (state.vorstand.offeneAntraege.length >= B.vorstand.maxAntraegeProSitzung * 2) {
+          fehler.push('Es sind schon genug Anträge für die nächsten Sitzungen offen.');
+          break;
+        }
+        if (e.betrag < 0 || e.betrag > B.vorstand.maxBetrag) {
+          fehler.push(`Anträge sind auf CHF ${B.vorstand.maxBetrag} begrenzt.`);
+          break;
+        }
+        state.vorstand.offeneAntraege.push(neuerAntrag(state, e.antragTyp, e.betrag));
+        break;
+      }
+      case 'antragZurueckziehen':
+        state.vorstand.offeneAntraege = state.vorstand.offeneAntraege.filter((a) => a.id !== e.antragId);
+        break;
+      case 'sitzungVorbereiten': {
+        if (vorbereitet) break;
+        vorbereitet = true;
+        const V = B.vorstand.vorbereitung;
+        state.vorstand.vorbereitung = Math.min(V.maxPunkte, state.vorstand.vorbereitung + V.bericht);
+        break;
+      }
+      case 'aktivitaet': {
+        let def;
+        try {
+          def = aktivitaetDef(e.aktivitaetId);
+        } catch {
+          fehler.push('Unbekannte Aktivität.');
+          break;
+        }
+        const grund = aktivitaetMoeglich(state, def);
+        if (grund) {
+          fehler.push(`${def.name}: ${grund}`);
+          break;
+        }
+        const ctx = ereignisKontext ?? { buchungen: [], meldungen: [], schnupper: [] };
+        aktivitaetStarten(state, def, ctx.buchungen, ctx.meldungen);
+        break;
+      }
+      case 'post': {
+        if (posts >= B.social.maxPostsProWoche) {
+          fehler.push(`Pro Woche sind höchstens ${B.social.maxPostsProWoche} Posts sinnvoll.`);
+          break;
+        }
+        posts++;
+        const ctx = ereignisKontext ?? { buchungen: [], meldungen: [], schnupper: [] };
+        const r = rng ?? new Rng(state.rngState);
+        const { betroffen } = postVeroeffentlichen(state, r, e.postTyp, e.teamId, e.bilder, e.werbung, ctx.buchungen);
+        if (betroffen && ereignisKontext) {
+          const kind = (state.familien[betroffen.familieId]?.kinderIds ?? []).map((id) => state.kinder[id]).find((k) => k?.status === 'aktiv');
+          erstelleInstanz(state, ereignisVorlage('post_ohne_einwilligung'), { elternteil: betroffen.id, kind: kind?.id, team: kind?.teamId ?? undefined }, {});
+        }
+        break;
+      }
+      case 'sponsorSuche':
+        state.sponsorSucheBis = absoluteWoche(state) + B.sponsoren.sucheWochen;
+        break;
       case 'helferBeenden': {
         const el = state.eltern[e.elternteilId];
         if (el) {

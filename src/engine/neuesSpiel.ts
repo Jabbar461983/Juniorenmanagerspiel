@@ -4,6 +4,7 @@ import { neuesTeam } from './entscheide';
 import { ereignisKontext, erzeugeEreignisse } from './ereignisse';
 import { erzeugeFamilie, erzeugeKind, erzeugeTrainer } from './generator';
 import { familieVernetzen } from './eltern';
+import { erzeugeVorstand, leererVorstand } from './vorstand';
 import { SCHEMA_VERSION } from './migrations';
 import { aktiveKinder, stufeFuerAlter, teamKinder } from './personen';
 import { Rng, seedAus } from './rng';
@@ -19,6 +20,8 @@ export interface NeuesSpielOptionen {
   seed?: number;
   /** Kalenderjahr, in dem die erste Saison im Juni beginnt */
   startJahr?: number;
+  /** Lernmodus: kein vorzeitiges Spielende (Etappe 3) */
+  lernmodus?: boolean;
 }
 
 export function neuesSpiel(opt: NeuesSpielOptionen): GameState {
@@ -57,8 +60,16 @@ export function neuesSpiel(opt: NeuesSpielOptionen): GameState {
     bilanzen: [],
     saisonStatistik: { mitgliederStart: 0, eintritte: 0, austritte: 0 },
     naechsteId: 1,
-    erweiterungen: {}
+    erweiterungen: {},
+    vorstand: leererVorstand(),
+    social: { reichweite: B.social.reichweiteStart, posts: [] },
+    sponsoren: [],
+    aktivitaeten: [],
+    chronik: [],
+    lernmodus: !!opt.lernmodus,
+    sponsorSucheBis: 0
   };
+  state.verein.vorstandEinfluss = B.vorstand.einfluss.start;
 
   // Teams, eines pro Stufe
   STUFEN.forEach((stufe, i) => neuesTeam(state, stufe, stufe, HALLEN[i % HALLEN.length]));
@@ -98,6 +109,9 @@ export function neuesSpiel(opt: NeuesSpielOptionen): GameState {
   }
   for (let i = 0; i < B.start.reserveTrainer; i++) erzeugeTrainer(state, rng);
 
+  erzeugeVorstand(state, rng);
+  state.vorstand.einflussVerlauf.push({ saison: 1, woche: 1, wert: state.verein.vorstandEinfluss });
+
   // Anfangsfaktoren berechnen (nur zur Anzeige)
   for (const team of Object.values(state.teams)) {
     const ctx = teamKontext(state, team);
@@ -114,7 +128,7 @@ export function neuesSpiel(opt: NeuesSpielOptionen): GameState {
     text:
       `Schön, dass du die Junioren von ${state.verein.name} übernimmst. Du startest mit ${aktiveKinder(state).length} Kindern in vier Teams. ` +
       'Plane in der Vorbereitung Trainer, Trainings und Anwerbung. Mitgliederbeiträge kannst du nur jetzt, in der Vorbereitung, anpassen. ' +
-      'Unser Ziel: möglichst viele und möglichst glückliche Junior:innen.',
+      'Unser Ziel: möglichst viele und möglichst glückliche Junior:innen. Der Vorstand trifft sich alle vier Wochen – dort kannst du Anträge stellen.',
     gelesen: false,
     wichtig: true
   });

@@ -169,7 +169,20 @@ export interface Trainer extends PersonBasis {
   absagenSaison: number;
 }
 
-export type Person = Kind | Elternteil | Trainer;
+// ---------- Vorstand (Etappe 3) ----------
+
+export type Amt = 'praesidium' | 'kasse' | 'sportchef' | 'kommunikation' | 'beisitz';
+export type Prioritaet = 'aktivmannschaft' | 'finanzen' | 'image' | 'junioren' | 'breitensport';
+
+export interface Vorstandsmitglied extends PersonBasis {
+  rolle: 'vorstand';
+  amt: Amt;
+  /** Haltung zu den Junioren, −100 (skeptisch) bis +100 (Unterstützer:in) */
+  haltung: number;
+  prioritaet: Prioritaet;
+}
+
+export type Person = Kind | Elternteil | Trainer | Vorstandsmitglied;
 
 export interface Familie {
   id: Id;
@@ -185,6 +198,8 @@ export interface Familie {
   ratenzahlung: boolean;
   /** Eltern leben getrennt */
   getrennt: boolean;
+  /** Einwilligung für Bilder der Kinder in sozialen Medien (Etappe 3) */
+  fotoEinwilligung: boolean;
 }
 
 export type Schwerpunkt = 'spass' | 'technik' | 'kondition' | 'taktik' | 'spielformen';
@@ -225,7 +240,11 @@ export interface Buchung {
     | 'verbandsgebuehren'
     | 'vereinsbeitrag'
     | 'ereignis'
-    | 'elternarbeit';
+    | 'elternarbeit'
+    | 'vorstand'
+    | 'sponsoren'
+    | 'anlaesse'
+    | 'socialmedia';
   text: string;
   betrag: number;
 }
@@ -366,10 +385,136 @@ export interface SaisonBilanz {
   bewertung: number;
   titel: string;
   wettkampf: string[];
+  /** Etappe 3: Bewertung nach allen Kriterien */
+  endbewertung?: Endbewertung;
+}
+
+export type AntragTyp = 'budget' | 'neuesTeam' | 'trainerentschaedigung' | 'material' | 'hallenzeiten';
+
+export interface Antrag {
+  id: Id;
+  typ: AntragTyp;
+  betrag: number;
+  saison: number;
+  woche: number;
+}
+
+export interface AntragErgebnis {
+  antrag: Antrag;
+  stimmen: { mitgliedId: Id | 'spieler'; ja: boolean }[];
+  angenommen: boolean;
+}
+
+export interface Sitzung {
+  saison: number;
+  woche: number;
+  vorbereitung: number;
+  ergebnisse: AntragErgebnis[];
+  einflussVorher: number;
+  einflussNachher: number;
+}
+
+export interface GvErgebnis {
+  saison: number;
+  jahresbudget: number;
+  gewaehlt: boolean;
+  stimmung: number;
+  text: string;
+}
+
+export interface VorstandState {
+  mitglieder: Record<Id, Vorstandsmitglied>;
+  /** Spieler:in ist selbst im Vorstand gewählt und stimmt mit */
+  spielerImVorstand: boolean;
+  offeneAntraege: Antrag[];
+  /** Vorbereitungspunkte für die nächste Sitzung */
+  vorbereitung: number;
+  sitzungen: Sitzung[];
+  einflussVerlauf: { saison: number; woche: number; wert: number }[];
+  /** von der GV beschlossenes Jahresbudget für die nächste Saison (wird in Woche 1 gebucht) */
+  jahresbudget: number;
+  gv: GvErgebnis[];
+  /** Rabatt auf die Hallenmiete (0–1) für die laufende Saison */
+  hallenRabatt: number;
+  /** Konkurs-Kette: 0 = keine, 1 = Massnahmen verlangt, 2 = Kürzung, 3 = Absetzung */
+  konkursStufe: number;
+  rettungsplan: boolean;
+  /** Kürzungsfaktor auf das nächste Jahresbudget (0–1) */
+  kuerzung: number;
+  /** Wochen in Folge ohne spielfähiges Team */
+  wochenOhneTeam: number;
+}
+
+// ---------- Social Media, Sponsoren, Anlässe (Etappe 3) ----------
+
+export type PostTyp = 'matchbericht' | 'training' | 'trainerportrait' | 'anlass';
+export type Bildwahl = 'keine' | 'nurMitEinwilligung' | 'alle';
+
+export interface Post {
+  id: Id;
+  saison: number;
+  woche: number;
+  typ: PostTyp;
+  teamId: Id | null;
+  bilder: Bildwahl;
+  werbung: number;
+  reichweiteGewinn: number;
+  problem: boolean;
+}
+
+export interface SocialState {
+  /** 0–100 */
+  reichweite: number;
+  posts: Post[];
+}
+
+export type Gegenleistung = 'logo' | 'socialmedia' | 'trikot';
+
+export interface Sponsor {
+  id: Id;
+  name: string;
+  branche: string;
+  /** Betrag pro Saison in CHF */
+  betrag: number;
+  /** Laufzeit in Saisons */
+  laufzeit: number;
+  startSaison: number;
+  gegenleistung: Gegenleistung;
+  elternteilId?: Id;
+  /** 0–100 */
+  zufriedenheit: number;
+  status: 'angebot' | 'aktiv' | 'beendet';
+}
+
+export interface LaufendeAktivitaet {
+  id: Id;
+  aktivitaetId: string;
+  saison: number;
+  startWoche: number;
+  /** absolute Woche, in der die Aktivität stattfindet */
+  abschluss: number;
+  helferIds: Id[];
+  status: 'laufend' | 'abgeschlossen';
+  ertrag?: number;
+  text?: string;
+}
+
+export interface ChronikEintrag {
+  saison: number;
+  woche: number;
+  art: 'erfolg' | 'krise' | 'finanzen' | 'vorstand' | 'verein';
+  text: string;
+}
+
+export interface Endbewertung {
+  punkte: number;
+  titel: string;
+  kriterien: { id: string; name: string; gewicht: number; wert: number }[];
 }
 
 export interface Spielende {
-  grund: 'laufzeit' | 'etappenEnde';
+  grund: 'laufzeit' | 'etappenEnde' | 'absetzung' | 'konkurs' | 'aufgeloest';
+  endbewertung?: Endbewertung;
   punkte: number;
   titel: string;
   text: string;
@@ -407,6 +552,16 @@ export interface GameState {
   saisonStatistik: { mitgliederStart: number; eintritte: number; austritte: number };
   naechsteId: number;
   spielende?: Spielende;
+  /** Etappe 3 */
+  vorstand: VorstandState;
+  social: SocialState;
+  sponsoren: Sponsor[];
+  aktivitaeten: LaufendeAktivitaet[];
+  chronik: ChronikEintrag[];
+  /** Lernmodus: kein vorzeitiges Spielende */
+  lernmodus: boolean;
+  /** Woche (absolut), bis zu der eine aktive Sponsorensuche wirkt */
+  sponsorSucheBis: number;
   /** Platzhalter für spätere Etappen (Vorstand, Social Media, J+S, Fallakten) */
   erweiterungen: Record<string, unknown>;
 }
@@ -430,7 +585,13 @@ export type Entscheid =
   | { typ: 'ereignis'; ereignisId: Id; optionId: string }
   | { typ: 'dialog'; dialogId: string; personId: Id; antworten: string[]; ereignisId?: Id }
   | { typ: 'elternabend'; teamId: Id }
-  | { typ: 'helferBeenden'; elternteilId: Id };
+  | { typ: 'helferBeenden'; elternteilId: Id }
+  | { typ: 'antrag'; antragTyp: AntragTyp; betrag: number }
+  | { typ: 'antragZurueckziehen'; antragId: Id }
+  | { typ: 'sitzungVorbereiten' }
+  | { typ: 'aktivitaet'; aktivitaetId: string }
+  | { typ: 'post'; postTyp: PostTyp; teamId: Id | null; bilder: Bildwahl; werbung: number }
+  | { typ: 'sponsorSuche' };
 
 // ---------- Ergebnis einer Woche ----------
 
