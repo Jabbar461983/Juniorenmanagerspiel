@@ -15,6 +15,11 @@ import {
   teamTrainer,
   teamsDerStufe,
   teamsVonTrainer,
+  teamEltern,
+  teamHatFahrdienst,
+  interessenkonflikte,
+  verfuegbareDialoge,
+  elternTyp,
   type GameState,
   type Schwerpunkt,
   type Team,
@@ -23,6 +28,8 @@ import {
 import { Badge, Balken, Karte } from '../components/Basis';
 import { Portrait } from '../components/Portrait';
 import type { SpielApi } from '../useSpiel';
+import { Gespraech } from '../components/Gespraech';
+import { geplanteGespraeche } from '../entwurf';
 
 const SCHWERPUNKTE: { id: Schwerpunkt; name: string }[] = [
   { id: 'spass', name: 'Spass und Bewegung' },
@@ -33,7 +40,42 @@ const SCHWERPUNKTE: { id: Schwerpunkt; name: string }[] = [
 ];
 const ROLLEN = Object.keys(ROLLEN_NAMEN) as TrainerRolle[];
 
-function TeamKarte({ spiel, team, s }: { spiel: SpielApi; team: Team; s: GameState }) {
+type Start = (g: { dialogId: string; personId: string }) => void;
+
+function ElternListe({ spiel, team, s, starte }: { spiel: SpielApi; team: Team; s: GameState; starte: Start }) {
+  const eltern = teamEltern(s, team.id).sort((a, b) => a.nachname.localeCompare(b.nachname));
+  const kontingentVoll = geplanteGespraeche(spiel.stand!.entwurf) >= B.dialog.gespraecheProWoche;
+  return (
+    <ul className="kinderliste">
+      {eltern.map((e) => {
+        const fahrdienst = verfuegbareDialoge(spiel.stand!.state, e.id).find((d) => d.dialog.id === 'eltern_fahrdienst');
+        return (
+          <li key={e.id} className="kind-zeile">
+            <Portrait meta={e.portrait} personId={e.id} vorname={e.vorname} nachname={e.nachname} stimmung={stimmungAus(e.stimmung)} groesse={36} />
+            <span className="kind-name">
+              {name(e)} <span className="klein">({e.bekannt.includes('typ') ? elternTyp(e.typ).name : 'Typ ?'}, Einfluss {e.einfluss})</span>
+              {e.helfer && <Badge ton="gut">{e.helfer === 'fahrdienst' ? 'Fahrdienst' : 'Anlässe'}</Badge>}
+            </span>
+            <span className="kind-z">Stimmung {Math.round(e.stimmung)}</span>
+            {fahrdienst && !e.helfer && (
+              <button
+                className="knopf klein"
+                disabled={!!fahrdienst.gesperrt || kontingentVoll}
+                title={fahrdienst.gesperrt ?? (kontingentVoll ? 'Diese Woche sind keine Gespräche mehr möglich.' : undefined)}
+                onClick={() => starte({ dialogId: 'eltern_fahrdienst', personId: e.id })}
+              >
+                💬 Fahrdienst anfragen
+              </button>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+function TeamKarte({ spiel, team, s, starte }: { spiel: SpielApi; team: Team; s: GameState; starte: Start }) {
+  const [elternOffen, setElternOffen] = useState(false);
   const [neuerTrainer, setNeuerTrainer] = useState('');
   const [neueRolle, setNeueRolle] = useState<TrainerRolle>('cotrainer');
   const [kinderOffen, setKinderOffen] = useState(false);
@@ -68,6 +110,10 @@ function TeamKarte({ spiel, team, s }: { spiel: SpielApi; team: Team; s: GameSta
             {kinder.length > c.idealMax && <Badge ton="warn">zu gross</Badge>}
             {kinder.length < c.idealMin && <Badge ton="warn">klein</Badge>}
             {team.flags['einsatzregeln'] && <Badge ton="gut">Einsatzregeln transparent</Badge>}
+            {teamHatFahrdienst(s, team.id) ? <Badge ton="gut">Fahrdienst</Badge> : <Badge>kein Fahrdienst</Badge>}
+            {interessenkonflikte(s, team).length > 0 && (
+              <Badge ton="warn">Elternteil im Trainerteam{team.flags['einsatzregeln'] ? '' : ' – Bevorzugung möglich'}</Badge>
+            )}
           </div>
           <Balken label="Ø Zufriedenheit" wert={z} ton="auto" />
           <h3>Trainingsplan</h3>
@@ -105,6 +151,34 @@ function TeamKarte({ spiel, team, s }: { spiel: SpielApi; team: Team; s: GameSta
             Halle: {team.halle} · Hallenmiete CHF {B.finanzen.hallenmieteProTraining} pro Training
             {team.absagenSaison > 0 && ` · ${team.absagenSaison} Absagen diese Saison`}
           </p>
+          <h3>Elternarbeit</h3>
+          {(() => {
+            const index = spiel.stand!.entwurf.findIndex((e) => e.typ === 'elternabend' && e.teamId === team.id);
+            const max = B.eltern.elternabend.maxProSaison;
+            return (
+              <div className="zeile">
+                {index >= 0 ? (
+                  <>
+                    <Badge ton="info">Elternabend geplant</Badge>
+                    <button className="knopf klein" onClick={() => spiel.entfernen(index)}>
+                      Absagen
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    className="knopf klein"
+                    disabled={team.elternabende >= max}
+                    onClick={() => spiel.entscheiden({ typ: 'elternabend', teamId: team.id })}
+                  >
+                    Elternabend durchführen (CHF {B.eltern.elternabend.kosten})
+                  </button>
+                )}
+                <span className="klein">
+                  {team.elternabende}/{max} diese Saison · wirkt im Trainingsstart besonders stark
+                </span>
+              </div>
+            );
+          })()}
         </div>
 
         <div>
@@ -192,9 +266,15 @@ function TeamKarte({ spiel, team, s }: { spiel: SpielApi; team: Team; s: GameSta
         </div>
       </div>
 
+      <div className="zeile abstand">
       <button className="link" aria-expanded={kinderOffen} onClick={() => setKinderOffen(!kinderOffen)}>
         {kinderOffen ? 'Kinder ausblenden' : `Kinder anzeigen (${kinder.length})`}
       </button>
+      <button className="link" aria-expanded={elternOffen} onClick={() => setElternOffen(!elternOffen)}>
+        {elternOffen ? 'Eltern ausblenden' : `Eltern anzeigen (${teamEltern(s, team.id).length})`}
+      </button>
+      </div>
+      {elternOffen && <ElternListe spiel={spiel} team={team} s={s} starte={starte} />}
       {kinderOffen && (
         <ul className="kinderliste">
           {kinder.map((k) => (
@@ -229,8 +309,10 @@ function TeamKarte({ spiel, team, s }: { spiel: SpielApi; team: Team; s: GameSta
 
 export function Teams({ spiel }: { spiel: SpielApi }) {
   const s = spiel.ansicht!;
+  const [gespraech, setGespraech] = useState<{ dialogId: string; personId: string } | null>(null);
   return (
     <div className="stapel">
+      {gespraech && <Gespraech spiel={spiel} dialogId={gespraech.dialogId} personId={gespraech.personId} schliessen={() => setGespraech(null)} />}
       {STUFEN.map((stufe) => {
         const teams = teamsDerStufe(s, stufe);
         const grund = teamGruendenMoeglich(s, stufe);
@@ -256,7 +338,7 @@ export function Teams({ spiel }: { spiel: SpielApi }) {
             </div>
             {teams.length === 0 && <p className="leer">Kein Team in dieser Stufe.</p>}
             {teams.map((t) => (
-              <TeamKarte key={t.id} spiel={spiel} team={t} s={s} />
+              <TeamKarte key={t.id} spiel={spiel} team={t} s={s} starte={setGespraech} />
             ))}
           </div>
         );

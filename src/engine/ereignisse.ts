@@ -18,9 +18,34 @@
 //   andereElternImTeam | familieEltern), trainerBelastung, trainerMotivation (ziel: Rolle oder
 //   trainerVon:<teamrolle>), kasse, ruf, teamFlag, kindFlag, training, schnupperKinder,
 //   neuesKind, elternZuTrainer, beziehung, familieHaertefall, zufall
+//
+// Etappe 2 ergänzt:
+//   Auswahl team: mitFahrdienst (Wettkampf diese Woche, Fahrdienst im Team)
+//   Auswahl kind: getrennteEltern | ohneMaterial (tiefes Einkommen) | unmotiviert | mitElternTyp:<typ1,typ2>
+//   Auswahl elternteil: mitAusstand | helferAmLimit | helferImTeam (aus) | einflussreichUnzufrieden
+//                       | vonKindTyp:<typ1,typ2> (mehrere Typen mit Komma)
+//   Modifikator: teamFahrdienst, rufAb (Etappe 3)
+//   Effekte: helfer (ziel, rolle, team), offenbaren (ziel, info), talentEinschaetzung (ziel team),
+//            zahlung (ziel elternteil, aktion freundlich|streng|raten|haertefall|abschreiben),
+//            vertrauen (ziel, wert), helferBeenden (ziel)
+//   Vorlage: offenbart [{rolle, info}] – Beobachtung beim Auslösen
+//   Option: dialog + dialogPerson – startet ein Gespräch
+//
+// Etappe 3 ergänzt:
+//   Auswahl elternteil: kritikerUnzufrieden | sponsorOhneVertrag
+//   Auswahl vorstand (art 'vorstand'): amt:<amt> | skeptisch | beliebig
+//   Vorlage: erzeugt 'sponsorAngebot' (legt ein Angebot an; Platzhalter {sponsor}, {betrag}, {laufzeit}, {gegenleistung})
+//            ausloeser.bedingung: 'sponsorAnfrage' (Wahrscheinlichkeit aus Ruf/Reichweite) | 'nichtLernmodus'
+//   Effekte: haltung (ziel vorstand|alleVorstand), einfluss, vorbereitung, finanzEinstellung (aktion material|entschaedigung, text niveau),
+//            rettungsplan, reichweite, sponsorAnnehmen, sponsorAblehnen, neuerTrainer, chronik (text), kuerzung (wert 0–1)
+//   Trainer-Ziel: alleTrainer
 import { B, EREIGNIS_VORLAGEN, ereignisVorlage, type Bedingung, type BeteiligterDef, type Effekt, type EreignisVorlage } from './config';
 import { buchen } from './finanzen';
 import { erzeugeKindMitFamilie, trainerAusElternteil } from './generator';
+import { ausstandBehandeln, teamHatFahrdienst } from './eltern';
+import { erzeugeTrainer } from './generator';
+import { chronik, einflussAendern, haltungAendern, haltungKategorie } from './vorstand';
+import { GEGENLEISTUNG_NAMEN, anfrageWahrscheinlichkeit, sponsorAblehnen, sponsorAngebot, sponsorAnnehmen } from './sponsoren';
 import { absoluteWoche, aktuelleWoche, type WochenInfo } from './kalender';
 import {
   aktiveKinder,
@@ -37,7 +62,7 @@ import type { Beteiligte, Buchung, EreignisInstanz, GameState, Id, Kind, Team, T
 import { STUFEN } from './types';
 import { negativFaktor } from './zufriedenheit';
 import { hatWettkampf } from './wettkampf';
-import { clamp, neueId } from './util';
+import { chf, clamp, neueId } from './util';
 
 export interface EreignisKontext {
   info: WochenInfo;
@@ -77,6 +102,10 @@ function kandidaten(state: GameState, def: BeteiligterDef, gebunden: Beteiligte,
             .map((t) => t.id);
         case 'wettkampfteam':
           return teams.filter((t) => mitKindern(t) && hatWettkampf(state, t, ctx.info.woche)).map((t) => t.id);
+        case 'mitFahrdienst':
+          return teams
+            .filter((t) => mitKindern(t) && hatWettkampf(state, t, ctx.info.woche) && teamHatFahrdienst(state, t.id))
+            .map((t) => t.id);
         case 'anderesTeam':
           return teams.filter((t) => t.id !== aus && mitKindern(t) && teamTrainer(state, t).length > 0).map((t) => t.id);
         case 'nachbarstufe': {
@@ -139,10 +168,14 @@ function kandidaten(state: GameState, def: BeteiligterDef, gebunden: Beteiligte,
           return aktiveKinder(state)
             .filter((k) => alter(state, k) >= 16 && k.werte.motivation >= 10)
             .map((k) => k.id);
-        case 'mitElternTyp':
+        case 'mitElternTyp': {
+          const typen = (param ?? '').split(',');
           return basis
-            .filter((k) => (state.familien[k.familieId]?.elternIds ?? []).some((e) => state.eltern[e]?.typ === param))
+            .filter((k) => (state.familien[k.familieId]?.elternIds ?? []).some((e) => typen.includes(state.eltern[e]?.typ ?? '')))
             .map((k) => k.id);
+        }
+        case 'unmotiviert':
+          return basis.filter((k) => k.werte.motivation < 9 || k.zufriedenheit < 45).map((k) => k.id);
         case 'tiefesEinkommen':
           return aktiveKinder(state)
             .filter((k) => {
@@ -154,6 +187,15 @@ function kandidaten(state: GameState, def: BeteiligterDef, gebunden: Beteiligte,
           return aktiveKinder(state)
             .filter((k) => k.charakterzuege.includes(param ?? '') && !k.flags[param2 ?? ''])
             .map((k) => k.id);
+        case 'getrennteEltern':
+          return basis.filter((k) => state.familien[k.familieId]?.getrennt).map((k) => k.id);
+        case 'ohneMaterial':
+          return basis
+            .filter((k) => {
+              const f = state.familien[k.familieId];
+              return f?.einkommen === 'tief' && state.finanzen.material !== 'hoch';
+            })
+            .map((k) => k.id);
         case 'vonElternteil': {
           const e = state.eltern[aus!];
           const f = e ? state.familien[e.familieId] : undefined;
@@ -162,13 +204,67 @@ function kandidaten(state: GameState, def: BeteiligterDef, gebunden: Beteiligte,
       }
       return [];
     }
+    case 'vorstand': {
+      const mitglieder = Object.values(state.vorstand.mitglieder);
+      if (auswahl === 'amt') return mitglieder.filter((m) => m.amt === param).map((m) => m.id);
+      if (auswahl === 'skeptisch') return mitglieder.filter((m) => haltungKategorie(m.haltung) === 'skeptisch').map((m) => m.id);
+      return mitglieder.map((m) => m.id);
+    }
     case 'elternteil': {
       const kind = aus ? state.kinder[aus] : undefined;
       switch (auswahl) {
         case 'vonKind':
           return kind ? [...(state.familien[kind.familieId]?.elternIds ?? [])] : [];
-        case 'vonKindTyp':
-          return kind ? (state.familien[kind.familieId]?.elternIds ?? []).filter((e) => state.eltern[e]?.typ === param) : [];
+        case 'vonKindTyp': {
+          const typen = (param ?? '').split(',');
+          return kind ? (state.familien[kind.familieId]?.elternIds ?? []).filter((e) => typen.includes(state.eltern[e]?.typ ?? '')) : [];
+        }
+        case 'mitAusstand': {
+          const offen = new Set(
+            state.ereignisse.filter((x) => !x.erledigt && x.vorlageId === 'zahlung_ausstand').map((x) => state.eltern[x.beteiligte['elternteil'] ?? '']?.familieId)
+          );
+          return Object.values(state.familien)
+            .filter((f) => f.ausstand >= B.eltern.zahlung.mahnSchwelle && !f.ratenzahlung && !offen.has(f.id))
+            .map((f) => f.elternIds[0]!)
+            .filter(Boolean);
+        }
+        case 'kritikerUnzufrieden':
+          return Object.values(state.eltern)
+            .filter(
+              (e) =>
+                e.typ === 'kritiker' &&
+                e.stimmung < 45 &&
+                (state.familien[e.familieId]?.kinderIds ?? []).some((k) => state.kinder[k]?.status === 'aktiv')
+            )
+            .map((e) => e.id);
+        case 'sponsorOhneVertrag': {
+          const mitVertrag = new Set(state.sponsoren.filter((x) => x.status !== 'beendet').map((x) => x.elternteilId));
+          return Object.values(state.eltern)
+            .filter(
+              (e) =>
+                e.typ === 'sponsor' &&
+                !mitVertrag.has(e.id) &&
+                (state.familien[e.familieId]?.kinderIds ?? []).some((k) => state.kinder[k]?.status === 'aktiv' && state.kinder[k]?.teamId)
+            )
+            .map((e) => e.id);
+        }
+        case 'helferAmLimit':
+          return Object.values(state.eltern)
+            .filter((e) => e.helfer && e.auslastung > B.eltern.helfer.limit)
+            .map((e) => e.id);
+        case 'helferImTeam': {
+          const team = aus ? state.teams[aus] : undefined;
+          return team ? Object.values(state.eltern).filter((e) => e.helfer === 'fahrdienst' && e.helferTeamId === team.id).map((e) => e.id) : [];
+        }
+        case 'einflussreichUnzufrieden':
+          return Object.values(state.eltern)
+            .filter(
+              (e) =>
+                e.einfluss >= 11 &&
+                e.stimmung < 50 &&
+                (state.familien[e.familieId]?.kinderIds ?? []).some((k) => state.kinder[k]?.status === 'aktiv' && state.kinder[k]?.teamId)
+            )
+            .map((e) => e.id);
         case 'typ': {
           const trainerEltern = new Set(Object.values(state.trainer).map((t) => t.elternteilId));
           return Object.values(state.eltern)
@@ -224,6 +320,10 @@ function modifikator(state: GameState, b: Bedingung, gebunden: Beteiligte): numb
       return state.finanzen.material === b.niveau ? b.faktor : 1;
     case 'schwerpunkt':
       return id && state.teams[id]?.plan.schwerpunkt === b.schwerpunkt ? b.faktor : 1;
+    case 'teamFahrdienst':
+      return id && teamHatFahrdienst(state, id) ? b.faktor : 1;
+    case 'rufAb':
+      return state.verein.ruf >= (b.ab ?? 0) ? b.faktor : 1;
   }
   return 1;
 }
@@ -237,8 +337,9 @@ export function ersetzePlatzhalter(state: GameState, text: string, beteiligte: B
     if (!id) return voll;
     const team = state.teams[id];
     if (team) return feld === 'halle' ? team.halle : team.name;
-    const p = state.kinder[id] ?? state.trainer[id] ?? state.eltern[id];
+    const p = state.kinder[id] ?? state.trainer[id] ?? state.eltern[id] ?? state.vorstand.mitglieder[id];
     if (!p) return '(unbekannt)';
+    if (feld === 'ausstand' && (p.rolle === 'kind' || p.rolle === 'elternteil')) return chf(state.familien[p.familieId]?.ausstand ?? 0);
     return feld === 'vorname' ? p.vorname : name(p);
   });
 }
@@ -246,6 +347,7 @@ export function ersetzePlatzhalter(state: GameState, text: string, beteiligte: B
 function verfuegbareOptionen(state: GameState, vorlage: EreignisVorlage, beteiligte: Beteiligte): string[] {
   return vorlage.optionen
     .filter((o) => (o.benoetigt ?? []).every((r) => !!beteiligte[r]))
+    .filter((o) => !o.dialog || !!beteiligte[o.dialogPerson ?? ''])
     .filter((o) => {
       if (!o.benoetigtPlatz) return true;
       const team = state.teams[beteiligte[o.benoetigtPlatz] ?? ''];
@@ -261,6 +363,11 @@ export function erstelleInstanz(
   variablen: Record<string, string>
 ): EreignisInstanz {
   const optionen = verfuegbareOptionen(state, vorlage, beteiligte);
+  for (const o of vorlage.offenbart ?? []) {
+    const pid = beteiligte[o.rolle];
+    const p = pid ? (state.kinder[pid] ?? state.eltern[pid] ?? state.trainer[pid]) : undefined;
+    if (p && !p.bekannt.includes(o.info)) p.bekannt.push(o.info);
+  }
   const inst: EreignisInstanz = {
     id: neueId(state, 'ev'),
     vorlageId: vorlage.id,
@@ -325,9 +432,18 @@ export function erzeugeEreignisse(state: GameState, rng: Rng, ctx: EreignisKonte
     // Wahrscheinlichkeit zuerst prüfen, dann Beteiligte binden
     const b = bindeBeteiligte(state, rng, vorlage, ctx);
     if (!b) continue;
-    let p = a.wahrscheinlichkeit;
+    if (a.bedingung === 'nichtLernmodus' && state.lernmodus) continue;
+    let p = a.bedingung === 'sponsorAnfrage' ? anfrageWahrscheinlichkeit(state) : a.wahrscheinlichkeit;
     for (const m of a.modifikatoren ?? []) p *= modifikator(state, m, b);
     if (!rng.chance(clamp(p, 0, 1))) continue;
+    if (vorlage.erzeugt === 'sponsorAngebot') {
+      const sp = sponsorAngebot(state, rng, b['elternteil']);
+      b['sponsor'] = sp.id;
+      variablen['sponsor'] = sp.name;
+      variablen['betrag'] = chf(sp.betrag);
+      variablen['laufzeit'] = `${sp.laufzeit} Saison${sp.laufzeit === 1 ? '' : 's'}`;
+      variablen['gegenleistung'] = GEGENLEISTUNG_NAMEN[sp.gegenleistung];
+    }
     neu.push(erstelleInstanz(state, vorlage, b, variablen));
     state.ereignisVerlauf[vorlage.id] = jetzt;
   }
@@ -389,6 +505,7 @@ function elternZiel(state: GameState, ziel: string, b: Beteiligte) {
 }
 
 function trainerZiel(state: GameState, ziel: string, b: Beteiligte) {
+  if (ziel === 'alleTrainer') return aktiveTrainer(state);
   if (ziel.startsWith('trainerVon:')) {
     const team = state.teams[b[ziel.slice('trainerVon:'.length)] ?? ''];
     return team ? teamTrainer(state, team) : [];
@@ -503,11 +620,98 @@ export function wendeEffekteAn(
         break;
       }
       case 'familieHaertefall': {
-        const k = state.kinder[b[e.ziel ?? 'kind'] ?? ''];
-        const f = k ? state.familien[k.familieId] : undefined;
+        const pid = b[e.ziel ?? 'kind'] ?? '';
+        const p = state.kinder[pid] ?? state.eltern[pid];
+        const f = p ? state.familien[p.familieId] : undefined;
         if (f) f.haertefall = true;
         break;
       }
+      case 'helfer': {
+        const el = state.eltern[b[e.ziel ?? 'elternteil'] ?? ''];
+        const team = state.teams[b[e.team ?? 'team'] ?? ''];
+        if (el && team && (e.aktion === 'fahrdienst' || e.aktion === 'anlaesse')) {
+          el.helfer = e.aktion;
+          el.helferTeamId = team.id;
+          ctx.meldungen.push(`${name(el)} übernimmt ${e.aktion === 'fahrdienst' ? 'den Fahrdienst' : 'Hilfe bei Anlässen'} für ${team.name}.`);
+        }
+        break;
+      }
+      case 'helferBeenden': {
+        const el = state.eltern[b[e.ziel ?? 'elternteil'] ?? ''];
+        if (el) {
+          el.helfer = null;
+          el.helferTeamId = null;
+        }
+        break;
+      }
+      case 'offenbaren': {
+        const pid = b[e.ziel ?? ''] ?? '';
+        const p = state.kinder[pid] ?? state.eltern[pid] ?? state.trainer[pid] ?? state.vorstand.mitglieder[pid];
+        if (p && e.text && !p.bekannt.includes(e.text)) p.bekannt.push(e.text);
+        break;
+      }
+      case 'talentEinschaetzung': {
+        const team = state.teams[b[e.ziel ?? 'team'] ?? ''];
+        if (team) for (const k of teamKinder(state, team.id)) if (!k.bekannt.includes('talent')) k.bekannt.push('talent');
+        break;
+      }
+      case 'vertrauen': {
+        const pid = b[e.ziel ?? ''] ?? '';
+        const p = state.kinder[pid] ?? state.eltern[pid] ?? state.trainer[pid] ?? state.vorstand.mitglieder[pid];
+        if (p) p.vertrauen = clamp(p.vertrauen + wert, -100, 100);
+        break;
+      }
+      case 'zahlung': {
+        const el = state.eltern[b[e.ziel ?? 'elternteil'] ?? ''];
+        const f = el ? state.familien[el.familieId] : undefined;
+        if (f && e.aktion) ausstandBehandeln(state, rng, f, e.aktion, ctx.buchungen, ctx.meldungen);
+        break;
+      }
+      case 'haltung': {
+        const ziele =
+          e.ziel === 'alleVorstand'
+            ? Object.values(state.vorstand.mitglieder)
+            : [state.vorstand.mitglieder[b[e.ziel ?? 'vorstand'] ?? '']].filter((m) => !!m);
+        for (const m of ziele) haltungAendern(m!, wert);
+        break;
+      }
+      case 'einfluss':
+        einflussAendern(state, wert);
+        break;
+      case 'vorbereitung':
+        state.vorstand.vorbereitung = clamp(state.vorstand.vorbereitung + wert, 0, B.vorstand.vorbereitung.maxPunkte);
+        break;
+      case 'finanzEinstellung':
+        if (e.aktion === 'material' && (e.text === 'tief' || e.text === 'mittel' || e.text === 'hoch')) state.finanzen.material = e.text;
+        if (e.aktion === 'entschaedigung' && (e.text === 'tief' || e.text === 'mittel' || e.text === 'hoch')) state.finanzen.entschaedigung = e.text;
+        break;
+      case 'rettungsplan':
+        state.vorstand.rettungsplan = true;
+        break;
+      case 'kuerzung':
+        state.vorstand.kuerzung = clamp(state.vorstand.kuerzung + wert, 0, 0.6);
+        break;
+      case 'reichweite':
+        state.social.reichweite = clamp(state.social.reichweite + wert, 0, 100);
+        break;
+      case 'sponsorAnnehmen': {
+        const sp = state.sponsoren.find((x) => x.id === b['sponsor']);
+        if (sp) sponsorAnnehmen(state, sp, ctx.buchungen, ctx.meldungen);
+        break;
+      }
+      case 'sponsorAblehnen': {
+        const sp = state.sponsoren.find((x) => x.id === b['sponsor']);
+        if (sp) sponsorAblehnen(sp);
+        break;
+      }
+      case 'neuerTrainer': {
+        const t = erzeugeTrainer(state, rng, { quelle: 'inserat' });
+        ctx.meldungen.push(`${name(t)} ist neu im Trainerpool. Teile die Person in der Teamansicht einem Team zu.`);
+        break;
+      }
+      case 'chronik':
+        if (e.text) chronik(state, 'verein', ersetzePlatzhalter(state, e.text, b, {}));
+        break;
       case 'zufall': {
         if (rng.chance(e.wahrscheinlichkeit ?? 0.5)) {
           if (e.text) ctx.meldungen.push(e.text);

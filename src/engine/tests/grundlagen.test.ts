@@ -147,7 +147,7 @@ describe('Spielstand und Migrationen', () => {
     _registriereMigration(0, (raw) => ({ ...raw, schemaVersion: 1, migriert: true }));
     const alt = { ...JSON.parse(JSON.stringify(s)), schemaVersion: 0 };
     const neu = migriere(alt) as unknown as Record<string, unknown>;
-    expect(neu['schemaVersion']).toBe(1);
+    expect(neu['schemaVersion']).toBe(SCHEMA_VERSION);
     expect(neu['migriert']).toBe(true);
   });
 });

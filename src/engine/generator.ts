@@ -17,9 +17,12 @@ import type {
   Geschlecht,
   Hautton,
   Kind,
+  Amt,
+  Prioritaet,
   Qualifikation,
   Trainer,
-  TrainerSkills
+  TrainerSkills,
+  Vorstandsmitglied
 } from './types';
 import { clamp, neueId } from './util';
 
@@ -62,7 +65,12 @@ export function erzeugeFamilie(state: GameState, rng: Rng, opt: FamilieOptionen 
     einkommen,
     kinderIds: [],
     elternIds: [],
-    haertefall: false
+    haertefall: false,
+    ausstand: 0,
+    saeumig: false,
+    ratenzahlung: false,
+    getrennt: false,
+    fotoEinwilligung: rng.chance(B.social.einwilligungWahrscheinlichkeit)
   };
   state.familien[familie.id] = familie;
   const famTon = hautton(rng, h);
@@ -89,7 +97,13 @@ export function erzeugeFamilie(state: GameState, rng: Rng, opt: FamilieOptionen 
       zahlungsmoral: wert(rng, einkommen === 'tief' ? 10 : 15),
       einfluss: wert(rng, typ === 'sponsor' ? 15 : 8),
       stimmung: rng.int(55, 80),
-      familieId: familie.id
+      familieId: familie.id,
+      helfer: null,
+      helferTeamId: null,
+      auslastung: 0,
+      vertrauen: 0,
+      bekannt: rng.chance(B.eltern.typBekanntStart) ? ['typ'] : [],
+      gespraeche: []
     };
     e.portrait.gruppe = portraitGruppe(alter(state, e));
     state.eltern[e.id] = e;
@@ -97,9 +111,11 @@ export function erzeugeFamilie(state: GameState, rng: Rng, opt: FamilieOptionen 
   }
   // Partner kennen sich
   if (familie.elternIds.length === 2) {
+    familie.getrennt = rng.chance(B.eltern.getrenntWahrscheinlichkeit);
     const [a, b] = familie.elternIds as [string, string];
-    state.eltern[a]!.beziehungen.push({ zielId: b, art: 'familie', staerke: 70 });
-    state.eltern[b]!.beziehungen.push({ zielId: a, art: 'familie', staerke: 70 });
+    const staerke = familie.getrennt ? 10 : 70;
+    state.eltern[a]!.beziehungen.push({ zielId: b, art: 'familie', staerke });
+    state.eltern[b]!.beziehungen.push({ zielId: a, art: 'familie', staerke });
   }
   return familie;
 }
@@ -168,7 +184,10 @@ export function erzeugeKind(state: GameState, rng: Rng, familie: Familie, opt: K
     einsatzzeit: 0.7,
     fortschritt: 0.1,
     eintritt: { saison: state.saison, woche: state.woche },
-    flags: {}
+    flags: {},
+    vertrauen: 0,
+    bekannt: [],
+    gespraeche: []
   };
   // Geschwister-Beziehungen
   for (const gid of familie.kinderIds) {
@@ -259,7 +278,10 @@ export function erzeugeTrainer(state: GameState, rng: Rng, opt: TrainerOptionen 
     qualifikation: quali,
     quelle,
     status: 'aktiv',
-    absagenSaison: 0
+    absagenSaison: 0,
+    vertrauen: 0,
+    bekannt: [],
+    gespraeche: []
   };
   state.trainer[t.id] = t;
   return t;
@@ -287,8 +309,69 @@ export function trainerAusElternteil(state: GameState, rng: Rng, e: Elternteil):
     quelle: 'eltern',
     status: 'aktiv',
     elternteilId: e.id,
-    absagenSaison: 0
+    absagenSaison: 0,
+    vertrauen: e.vertrauen,
+    bekannt: [],
+    gespraeche: []
   };
+  state.trainer[t.id] = t;
+  return t;
+}
+
+/** Vorstandsmitglied (Etappe 3) */
+export function erzeugeVorstandsmitglied(state: GameState, rng: Rng, amt: Amt, prioritaet: Prioritaet, haltung: number): Vorstandsmitglied {
+  const h = herkunftWaehlen(rng);
+  const g: Geschlecht = rng.chance(0.45) ? 'w' : 'm';
+  const a = rng.int(32, 70);
+  const m: Vorstandsmitglied = {
+    id: neueId(state, 'v'),
+    rolle: 'vorstand',
+    vorname: vorname(rng, h, g),
+    nachname: rng.pick(h.nachnamen),
+    geschlecht: g,
+    geburtsjahr: state.startJahr + state.saison - 1 - a,
+    herkunft: h.id,
+    portrait: { gruppe: portraitGruppe(a), geschlecht: g, hautton: hautton(rng, h), nummer: 0 },
+    charakterzuege: zuege(rng, ELTERN_ZUEGE, 1, 1),
+    beziehungen: [],
+    vertrauen: 0,
+    bekannt: [],
+    gespraeche: [],
+    amt,
+    haltung: clamp(Math.round(haltung), -100, 100),
+    prioritaet
+  };
+  return m;
+}
+
+/** Ehemalige:r U18-Junior:in wird Hilfsleiter:in (Trainerquelle «junior»). */
+export function trainerAusKind(state: GameState, rng: Rng, k: Kind): Trainer {
+  const a = alter(state, k);
+  const t: Trainer = {
+    id: neueId(state, 't'),
+    rolle: 'trainer',
+    vorname: k.vorname,
+    nachname: k.nachname,
+    geschlecht: k.geschlecht,
+    geburtsjahr: k.geburtsjahr,
+    herkunft: k.herkunft,
+    portrait: { ...k.portrait, gruppe: portraitGruppe(a) },
+    charakterzuege: zuege(rng, TRAINER_ZUEGE, 1, 1),
+    beziehungen: [],
+    skills: trainerSkillsFuerAlter(rng, a),
+    verfuegbarkeit: rng.int(1, 2),
+    belastung: 10,
+    motivation: clamp(Math.round(k.werte.motivation), 1, 20),
+    qualifikation: 'keine',
+    quelle: 'junior',
+    status: 'aktiv',
+    kindId: k.id,
+    absagenSaison: 0,
+    vertrauen: k.vertrauen,
+    bekannt: [],
+    gespraeche: []
+  };
+  t.skills.fachwissen = clamp(Math.round((t.skills.fachwissen + k.werte.spielverstaendnis) / 2), 1, 20);
   state.trainer[t.id] = t;
   return t;
 }

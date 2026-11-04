@@ -3,6 +3,7 @@ import { bewertung } from '../saison';
 import { alter, stufeFuerAlter } from '../personen';
 import { simuliereWochen, testSpiel } from './hilfen';
 import { B } from '../config';
+import { neuesSpiel } from '../neuesSpiel';
 
 describe('Übertritte am Saisonende', () => {
   it('Kinder steigen nach Jahrgang auf, U18-Abgänger verlassen die Abteilung', () => {
@@ -31,12 +32,18 @@ describe('Übertritte am Saisonende', () => {
     expect(bilanz.uebertritte).toBeGreaterThan(0);
   });
 
-  it('In Etappe 1 endet das Spiel nach einer Saison, die Laufzeit bleibt gespeichert', () => {
+  it('Das Spiel läuft bis zur gewählten Laufzeit weiter', () => {
     const s = simuliereWochen(testSpiel(22), 52);
-    expect(s.spielende).toBeDefined();
+    expect(s.spielende).toBeUndefined();
+    expect(s.saison).toBe(2);
     expect(s.laufzeit).toBe(B.spiel.laufzeitStandard);
-    expect(s.spielende!.grund).toBe(B.spiel.etappeMaxSaisons >= s.laufzeit ? 'laufzeit' : 'etappenEnde');
+  });
+
+  it('Nach Ablauf der Laufzeit endet das Spiel mit der Endbewertung', () => {
+    const s = simuliereWochen(neuesSpiel({ vereinsname: 'SHC Test', seed: 23, laufzeit: 1 }), 52);
+    expect(s.spielende?.grund).toBe('laufzeit');
     expect(s.spielende!.punkte).toBe(s.bilanzen[0]!.bewertung);
+    expect(s.spielende!.endbewertung?.kriterien).toHaveLength(6);
   });
 });
 

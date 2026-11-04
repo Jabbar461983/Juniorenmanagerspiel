@@ -4,6 +4,7 @@
 import { ANWERBUNG, B, ereignisVorlage } from './config';
 import { bucheAnwerbung, wendeEntscheideAn } from './entscheide';
 import {
+  erstelleInstanz,
   ereignisKontext,
   erzeugeEreignisse,
   loeseEreignis,
@@ -12,7 +13,8 @@ import {
   offenePflichtEreignisse,
   type EffektKontext
 } from './ereignisse';
-import { beitragsFaktor, beitragsFaktorSchnitt, buchen, haertefallAktiv, jahresbeitrag } from './finanzen';
+import { beitragsFaktor, beitragsFaktorSchnitt, buchen, haertefallAktiv } from './finanzen';
+import { elternWoche, familieVernetzen, interessenkonflikte, ohneTransport, zahlungen } from './eltern';
 import { absoluteWoche, aktuelleWoche } from './kalender';
 import {
   aktiveKinder,
@@ -27,6 +29,11 @@ import {
 } from './personen';
 import { Rng } from './rng';
 import { saisonAbschliessen } from './saison';
+import { endbewertung } from './bewertung';
+import { anlaesseWoche } from './anlaesse';
+import { reichweiteFaktor, socialWoche } from './social';
+import { sponsorenSaisonstart, sponsorenWoche } from './sponsoren';
+import { generalversammlung, sitzung, vereinsPruefung } from './vorstand';
 import type { Entscheid, GameState, Id, Kind, Stufe, WochenBericht, WochenErgebnis } from './types';
 import { clamp, klonen, neueId, round1 } from './util';
 import { eigeneStaerke, einsatzzeiten, hatWettkampf, simuliereWettkampfWoche, starteWettkampf } from './wettkampf';
@@ -119,7 +126,8 @@ export function simulateWeek(input: GameState, decisions: Entscheid[]): WochenEr
 
   // 4. Saisonstart / Wettkampfstart
   if (state.woche === 1 && state.saison >= 2) {
-    buchen(state, { kategorie: 'vereinsbeitrag', text: 'Jahresbeitrag Gesamtverein', betrag: B.finanzen.vereinsbeitragAbSaison2 }, report.buchungen);
+    buchen(state, { kategorie: 'vereinsbeitrag', text: 'Jahresbudget (Beschluss der GV)', betrag: state.vorstand.jahresbudget }, report.buchungen);
+    sponsorenSaisonstart(state, report.buchungen, report.meldungen);
   }
   if (!state.wettkampf.gestartet && info.phase === 'meisterschaft') {
     starteWettkampf(state, rng);
@@ -140,7 +148,8 @@ export function simulateWeek(input: GameState, decisions: Entscheid[]): WochenEr
   // 5. Anwerbung
   const eintrittsFaktor =
     Math.max(0.2, 1 - B.eintritt.beitragElastizitaet * (beitragsFaktorSchnitt(state) - 1)) *
-    (1 + (state.verein.ruf - 50) * B.eintritt.rufEinfluss);
+    (1 + (state.verein.ruf - 50) * B.eintritt.rufEinfluss) *
+    reichweiteFaktor(state);
   for (const a of anwerbungen) {
     const m = ANWERBUNG.find((x) => x.id === a.massnahmeId)!;
     bucheAnwerbung(state, a, ectx);
@@ -200,7 +209,8 @@ export function simulateWeek(input: GameState, decisions: Entscheid[]): WochenEr
         k.fortschritt = 0.8 * k.fortschritt + 0.2 * gain;
       }
       const miete =
-        anpassung === 'aussenplatz' || anpassung === 'zusammenlegen' ? 0 : anpassung === 'reduziert' ? 0.5 : 1;
+        (anpassung === 'aussenplatz' || anpassung === 'zusammenlegen' ? 0 : anpassung === 'reduziert' ? 0.5 : 1) *
+        (1 - state.vorstand.hallenRabatt);
       buchen(
         state,
         { kategorie: 'hallenmiete', text: `Halle ${team.name}`, betrag: -trainings * B.finanzen.hallenmieteProTraining * miete },
@@ -231,8 +241,20 @@ export function simulateWeek(input: GameState, decisions: Entscheid[]): WochenEr
   for (const m of spielMeldungen) report.spiele.push({ stufe: m.stufe, text: m.text });
   for (const team of spieleTeams) {
     const kinder = teamKinder(state, team.id, false);
-    const anwesend = kinder.filter(() => rng.chance(1 - abwKinder)).map((k) => k.id);
+    const T2 = B.eltern.transport;
+    const anwesend = kinder
+      .filter((k) => {
+        const ohne = ohneTransport(state, k);
+        if (ohne) k.werte.motivation = clamp(k.werte.motivation - T2.motivationAbzug, 1, 20);
+        return rng.chance((1 - abwKinder) * (ohne ? T2.anwesenheitOhneFahrdienst : 1));
+      })
+      .map((k) => k.id);
     const ez = einsatzzeiten(state, team, anwesend);
+    if (!team.flags['einsatzregeln']) {
+      for (const c of interessenkonflikte(state, team)) {
+        for (const id of c.kindIds) if (ez[id] !== undefined) ez[id] = Math.min(1, ez[id]! + B.eltern.interessenkonflikt.einsatzBonus);
+      }
+    }
     for (const k of kinder) {
       const e = ez[k.id] ?? 0;
       k.einsatzzeit = 0.7 * k.einsatzzeit + 0.3 * e;
@@ -293,12 +315,7 @@ export function simulateWeek(input: GameState, decisions: Entscheid[]): WochenEr
     // Motivation folgt langsam der Zufriedenheit
     k.werte.motivation = clamp(round1(k.werte.motivation + 0.08 * (k.zufriedenheit / 5 - k.werte.motivation)), 1, 20);
   }
-  for (const e of Object.values(state.eltern)) {
-    const kinder = (state.familien[e.familieId]?.kinderIds ?? []).map((id) => state.kinder[id]).filter((k): k is Kind => !!k && k.status !== 'ausgetreten');
-    if (kinder.length === 0) continue;
-    const z = kinder.reduce((s, k) => s + k.zufriedenheit, 0) / kinder.length;
-    e.stimmung = clamp(round1(e.stimmung + 0.08 * (z - e.stimmung)), 0, 100);
-  }
+  elternWoche(state, info, new Set(spieleTeams.map((t) => t.id)), report.meldungen);
 
   // 10. Schnupperkinder entscheiden sich
   const neuIds = new Set(ectx.schnupper.map((k) => k.id));
@@ -317,6 +334,7 @@ export function simulateWeek(input: GameState, decisions: Entscheid[]): WochenEr
     if (rng.chance(p)) {
       k.status = 'aktiv';
       k.eintritt = { saison: state.saison, woche: state.woche };
+      if (k.teamId) familieVernetzen(state, rng, k.familieId, k.teamId);
       state.saisonStatistik.eintritte++;
       report.eintritte.push({ id: k.id, name: name(k), text: `bleibt nach dem Schnuppern (${state.teams[k.teamId ?? '']?.name ?? '–'})` });
     } else {
@@ -385,13 +403,18 @@ export function simulateWeek(input: GameState, decisions: Entscheid[]): WochenEr
       const neu = neuesSchnupperkind(state, rng, rng.int(6, 12));
       if (neu) ectx.schnupper.push(neu);
     }
+    // Nach den Sommerferien melden sich besonders viele Jüngere zum Schnuppern
+    if (info.phase === 'trainingsstart' && rng.chance(Math.min(0.95, B.eintritt.spontanTrainingsstart * eintrittsFaktor))) {
+      const [amin, amax] = B.eintritt.spontanTrainingsstartAlter as [number, number];
+      const neu = neuesSchnupperkind(state, rng, rng.int(amin, amax));
+      if (neu) ectx.schnupper.push(neu);
+    }
   }
   for (const k of ectx.schnupper) report.schnupper.push({ id: k.id, name: name(k) });
 
   // 13. Wöchentliche Buchungen
   const F = B.finanzen;
-  const beitraege = aktiveKinder(state).reduce((s, k) => s + jahresbeitrag(state, k) / B.spiel.wochenProSaison, 0);
-  buchen(state, { kategorie: 'beitraege', text: 'Mitgliederbeiträge', betrag: beitraege }, report.buchungen);
+  zahlungen(state, rng, report.buchungen);
   buchen(state, { kategorie: 'material', text: 'Material und Bälle', betrag: -F.material[state.finanzen.material] }, report.buchungen);
   const trainerMitTeam = aktiveTrainer(state).filter((t) => teamsVonTrainer(state, t.id).length > 0).length;
   buchen(
@@ -403,24 +426,22 @@ export function simulateWeek(input: GameState, decisions: Entscheid[]): WochenEr
     },
     report.buchungen
   );
+  anlaesseWoche(state, rng, report.buchungen, report.meldungen);
   if (state.finanzen.kasse < 0) {
     state.finanzen.wochenUnterNull += 1;
-    if (state.finanzen.wochenUnterNull === F.warnungNachWochen) {
-      state.posteingang.push({
-        id: neueId(state, 'n'),
-        saison: state.saison,
-        woche: state.woche,
-        absender: 'Kassier:in',
-        titel: 'Warnung: Kasse im Minus',
-        text: 'Die Kasse der Juniorenabteilung ist seit zwei Wochen im Minus. Der Vorstand erwartet Massnahmen: Ausgaben senken oder Einnahmen erhöhen.',
-        gelesen: false,
-        wichtig: true
-      });
-      report.meldungen.push('Warnung: Die Kasse ist seit zwei Wochen im Minus.');
-    }
+    if (state.finanzen.wochenUnterNull === F.warnungNachWochen) report.meldungen.push('Warnung: Die Kasse ist seit zwei Wochen im Minus.');
   } else {
     state.finanzen.wochenUnterNull = 0;
   }
+
+  // 13b. Vorstand, Social Media, Sponsoren, Vereinsprüfung
+  socialWoche(state);
+  sponsorenWoche(state);
+  sitzung(state, rng, report.buchungen, report.meldungen);
+  generalversammlung(state, report.meldungen);
+  vereinsPruefung(state, report.meldungen, (vorlageId) => {
+    erstelleInstanz(state, ereignisVorlage(vorlageId), {}, {});
+  });
 
   // 14. Abschluss der Woche
   report.mitgliederNachher = aktiveKinder(state).length;
@@ -429,7 +450,13 @@ export function simulateWeek(input: GameState, decisions: Entscheid[]): WochenEr
   state.trainingsAnpassungen = {};
   state.zusammenlegungen = {};
 
-  if (saisonende) {
+  if (state.spielende) {
+    // vorzeitiges Spielende (Absetzung, Konkurs, Auflösung): Bewertung festhalten
+    const eb = endbewertung(state);
+    state.spielende.endbewertung = eb;
+    state.spielende.punkte = eb.punkte;
+    state.spielende.titel = eb.titel;
+  } else if (saisonende) {
     report.saisonBilanz = saisonAbschliessen(state, rng);
   } else {
     state.woche += 1;

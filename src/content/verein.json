@@ -1,0 +1,31 @@
+{
+  "_kommentar": "Vereinsumfeld (Etappe 3): Vorstandsämter, Prioritäten und fiktive lokale Sponsoren.",
+  "aemter": [
+    { "id": "praesidium", "name": "Präsident:in" },
+    { "id": "kasse", "name": "Kassier:in" },
+    { "id": "sportchef", "name": "Sportchef:in" },
+    { "id": "kommunikation", "name": "Kommunikation" },
+    { "id": "beisitz", "name": "Beisitzer:in" }
+  ],
+  "prioritaeten": [
+    { "id": "aktivmannschaft", "name": "Aktivmannschaft" },
+    { "id": "finanzen", "name": "Finanzen" },
+    { "id": "image", "name": "Vereinsimage" },
+    { "id": "junioren", "name": "Junioren" },
+    { "id": "breitensport", "name": "Breitensport" }
+  ],
+  "sponsoren": [
+    { "name": "Bäckerei Zaugg", "branche": "Bäckerei" },
+    { "name": "Garage Moser AG", "branche": "Autogarage" },
+    { "name": "Elektro Gfeller GmbH", "branche": "Elektroinstallationen" },
+    { "name": "Regionalbank Gürbetal", "branche": "Bank" },
+    { "name": "Malerei Kohler", "branche": "Malergeschäft" },
+    { "name": "Physio am Bach", "branche": "Physiotherapie" },
+    { "name": "Pizzeria Da Enzo", "branche": "Restaurant" },
+    { "name": "Sport Hostettler", "branche": "Sportgeschäft" },
+    { "name": "Holzbau Burri AG", "branche": "Holzbau" },
+    { "name": "Apotheke Dorfplatz", "branche": "Apotheke" },
+    { "name": "Velo-Werkstatt Stucki", "branche": "Velogeschäft" },
+    { "name": "Treuhand Iseli", "branche": "Treuhand" }
+  ]
+}

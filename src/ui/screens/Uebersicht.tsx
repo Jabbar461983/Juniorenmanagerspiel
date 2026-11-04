@@ -1,6 +1,11 @@
 import {
   ANWERBUNG,
+  ANTRAG_NAMEN,
+  AKTIVITAETEN,
+  POST_NAMEN,
+  BILD_NAMEN,
   B,
+  dialogDef,
   optionText,
   type Entscheid,
   aktiveKinder,
@@ -12,10 +17,24 @@ import {
   teamKinder,
   teamTrainer,
   teamsVonTrainer,
+  teamEltern,
+  teamHatFahrdienst,
+  wochenBisSitzung,
+  benoetigtePosts,
+  postsImMonat,
   type GameState
 } from '../../engine';
 import type { Ansicht } from '../App';
 import { Badge, Balken, Karte, Kennzahl } from '../components/Basis';
+import { Chronik, Endbewertung } from '../components/Endbewertung';
+
+const SPIELENDE_TITEL = {
+  laufzeit: 'Endbewertung',
+  etappenEnde: 'Ende der spielbaren Version',
+  absetzung: 'Abgesetzt',
+  konkurs: 'Budgetkonkurs',
+  aufgeloest: 'Abteilung aufgelöst'
+} as const;
 import type { SpielApi } from '../useSpiel';
 
 function hinweise(s: GameState): { text: string; ziel: Ansicht }[] {
@@ -34,6 +53,27 @@ function hinweise(s: GameState): { text: string; ziel: Ansicht }[] {
     if (teamsVonTrainer(s, t.id).length === 0) res.push({ text: `${t.vorname} ${t.nachname} ist keinem Team zugeteilt.`, ziel: 'teams' });
   }
   if (s.finanzen.kasse < 0) res.push({ text: 'Die Kasse ist im Minus.', ziel: 'finanzen' });
+  if (s.vorstand.konkursStufe > 0) res.push({ text: 'Der Vorstand verlangt Massnahmen gegen das Minus in der Kasse.', ziel: 'vorstand' });
+  if (s.verein.vorstandEinfluss < 25 && !s.lernmodus) res.push({ text: `Dein Einfluss im Vorstand ist tief (${Math.round(s.verein.vorstandEinfluss)}). Unter 10 droht die Absetzung.`, ziel: 'vorstand' });
+  if (wochenBisSitzung(s) === 1 && s.vorstand.offeneAntraege.length === 0) res.push({ text: 'Nächste Woche tagt der Vorstand. Willst du einen Antrag stellen?', ziel: 'vorstand' });
+  const posts = benoetigtePosts(s);
+  if (posts > 0 && postsImMonat(s) < posts) res.push({ text: `Sponsoren erwarten ${posts} Posts pro Monat – zuletzt waren es ${postsImMonat(s)}.`, ziel: 'social' });
+  for (const e of Object.values(s.eltern)) {
+    if (e.helfer && e.auslastung > B.eltern.helfer.limit) res.push({ text: `${e.vorname} ${e.nachname} ist als Helfer:in am Limit.`, ziel: 'personen' });
+  }
+  const ausstand = Object.values(s.familien).reduce((a, f) => a + f.ausstand, 0);
+  if (ausstand >= B.eltern.zahlung.mahnSchwelle) res.push({ text: `Offene Mitgliederbeiträge: ${chf(ausstand)}.`, ziel: 'finanzen' });
+  const ohneFahrdienst = Object.values(s.teams).filter((t) => !teamHatFahrdienst(s, t.id) && teamKinder(s, t.id).length > 0 && t.stufe !== 'U18');
+  if (ohneFahrdienst.length > 0) {
+    res.push({ text: `Ohne Fahrdienst: ${ohneFahrdienst.map((t) => t.name).join(', ')}. Frag Eltern in der Teamansicht an.`, ziel: 'teams' });
+  }
+  for (const team of Object.values(s.teams)) {
+    const eltern = teamEltern(s, team.id);
+    const unzufrieden = eltern.filter((e) => e.stimmung < 40).length;
+    if (eltern.length > 0 && unzufrieden >= Math.max(2, eltern.length / 4)) {
+      res.push({ text: `Bei ${team.name} sind ${unzufrieden} Eltern unzufrieden – die Stimmung kann sich ausbreiten.`, ziel: 'teams' });
+    }
+  }
   return res;
 }
 
@@ -49,11 +89,9 @@ export function Uebersicht({ spiel, navigiere }: { spiel: SpielApi; navigiere: (
   return (
     <div className="stapel">
       {s.spielende && (
-        <Karte titel="Spielende" className="hervorgehoben">
-          <p className="gross-text">
-            {s.spielende.punkte} Punkte – «{s.spielende.titel}»
-          </p>
+        <Karte titel={SPIELENDE_TITEL[s.spielende.grund]} className="hervorgehoben">
           <p>{s.spielende.text}</p>
+          {s.spielende.endbewertung && <Endbewertung eb={s.spielende.endbewertung} />}
           {letzteBilanz && (
             <ul>
               {letzteBilanz.wettkampf.map((w, i) => (
@@ -61,6 +99,8 @@ export function Uebersicht({ spiel, navigiere }: { spiel: SpielApi; navigiere: (
               ))}
             </ul>
           )}
+          <h3>Chronik</h3>
+          <Chronik eintraege={s.chronik} />
           <button className="knopf" onClick={spiel.schliessen}>
             Zum Startbildschirm
           </button>
@@ -111,6 +151,7 @@ export function Uebersicht({ spiel, navigiere }: { spiel: SpielApi; navigiere: (
         </div>
       </Karte>
 
+      {!s.spielende && (
       <Karte titel="Hinweise">
         {h.length === 0 ? (
           <p className="leer">Alles im grünen Bereich.</p>
@@ -126,8 +167,15 @@ export function Uebersicht({ spiel, navigiere }: { spiel: SpielApi; navigiere: (
           </ul>
         )}
       </Karte>
+      )}
 
-      {spiel.stand!.entwurf.length > 0 && (
+      {!s.spielende && s.chronik.length > 0 && (
+        <Karte titel="Chronik">
+          <Chronik eintraege={s.chronik} max={6} />
+        </Karte>
+      )}
+
+      {spiel.stand!.entwurf.length > 0 && !s.spielende && (
         <Karte titel="Geplante Entscheide dieser Woche">
           <ul className="liste">
             {spiel.stand!.entwurf.map((e, i) => (
@@ -184,5 +232,27 @@ export function entscheidText(s: GameState, e: Entscheid): string {
       const inst = s.ereignisse.find((x) => x.id === e.ereignisId);
       return inst ? `${inst.titel}: ${optionText(s, inst, e.optionId)}` : 'Ereignis';
     }
+    case 'dialog': {
+      const p = s.kinder[e.personId] ?? s.eltern[e.personId] ?? s.trainer[e.personId];
+      return `Gespräch «${dialogDef(e.dialogId).titel}» mit ${p ? `${p.vorname} ${p.nachname}` : 'Person'}`;
+    }
+    case 'elternabend':
+      return `Elternabend ${team(e.teamId)}`;
+    case 'helferBeenden': {
+      const p = s.eltern[e.elternteilId];
+      return `${p ? `${p.vorname} ${p.nachname}` : 'Elternteil'} vom Helferdienst entlasten`;
+    }
+    case 'antrag':
+      return `Antrag an den Vorstand: ${ANTRAG_NAMEN[e.antragTyp]}${e.antragTyp === 'hallenzeiten' ? '' : ` (CHF ${e.betrag})`}`;
+    case 'antragZurueckziehen':
+      return 'Antrag zurückziehen';
+    case 'sitzungVorbereiten':
+      return 'Bericht für die Vorstandssitzung vorbereiten';
+    case 'aktivitaet':
+      return `Aktion starten: ${AKTIVITAETEN.find((a) => a.id === e.aktivitaetId)?.name ?? e.aktivitaetId}`;
+    case 'post':
+      return `Post: ${POST_NAMEN[e.postTyp]}${e.teamId ? ` (${team(e.teamId)})` : ''}, ${BILD_NAMEN[e.bilder]}${e.werbung ? `, Werbung CHF ${e.werbung}` : ''}`;
+    case 'sponsorSuche':
+      return 'Aktiv nach Sponsoren suchen';
   }
 }

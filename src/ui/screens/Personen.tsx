@@ -14,6 +14,14 @@ import {
   trainerZug,
   jahresbeitrag,
   haertefallAktiv,
+  infosVon,
+  verfuegbareDialoge,
+  amtName,
+  prioritaetName,
+  HALTUNG_NAMEN,
+  haltungKategorie,
+  chf,
+  B,
   type Elternteil,
   type GameState,
   type Kind,
@@ -22,9 +30,11 @@ import {
 } from '../../engine';
 import { Badge, Balken, Karte } from '../components/Basis';
 import { Portrait } from '../components/Portrait';
+import { Gespraech } from '../components/Gespraech';
+import { geplanteGespraeche } from '../entwurf';
 import type { SpielApi } from '../useSpiel';
 
-type Filter = 'kinder' | 'trainer' | 'eltern' | 'ehemalige';
+type Filter = 'kinder' | 'trainer' | 'eltern' | 'vorstand' | 'ehemalige';
 
 const QUALI: Record<Trainer['qualifikation'], string> = {
   keine: 'keine J+S-Anerkennung',
@@ -62,10 +72,94 @@ function untertitel(s: GameState, p: Person): string {
     const teams = teamsVonTrainer(s, p.id).map((t) => t.name);
     return `${a} J. · ${teams.length ? teams.join(', ') : 'ohne Team'}`;
   }
-  return `${a} J. · ${elternTyp(p.typ).name}`;
+  if (p.rolle === 'vorstand') return `${a} J. · ${amtName(p.amt)} · ${HALTUNG_NAMEN[haltungKategorie(p.haltung)]}`;
+  const kinder = (s.familien[p.familieId]?.kinderIds ?? []).map((id) => s.kinder[id]).filter((k) => k && k.status !== 'ausgetreten');
+  const typ = p.bekannt.includes('typ') ? elternTyp(p.typ).name : 'Typ ?';
+  return `${a} J. · ${typ}${kinder.length ? ` · Kind: ${kinder.map((k) => k!.vorname).join(', ')}` : ''}`;
 }
 
-function Detail({ s, p, schliessen, zeige }: { s: GameState; p: Person; schliessen: () => void; zeige: (id: string) => void }) {
+function Vertrauen({ wert }: { wert: number }) {
+  return (
+    <div className="vertrauen">
+      <span className="klein">Vertrauen zu dir</span>
+      <span className="vertrauen-skala" role="meter" aria-valuemin={-100} aria-valuemax={100} aria-valuenow={Math.round(wert)} aria-label="Vertrauen">
+        <span className="vertrauen-mitte" />
+        <span className="vertrauen-marke" style={{ left: `${(wert + 100) / 2}%` }} />
+      </span>
+      <span className="vertrauen-zahl">{Math.round(wert)}</span>
+    </div>
+  );
+}
+
+function Gespraeche({ spiel, s, p, starte }: { spiel: SpielApi; s: GameState; p: Person; starte: (dialogId: string) => void }) {
+  const infos = infosVon(s, p);
+  const unbekannt = infos.filter((i) => !i.bekannt).length;
+  const verfuegbar = verfuegbareDialoge(spiel.stand!.state, p.id);
+  const entwurf = spiel.stand!.entwurf;
+  const geplant = entwurf.find((e) => e.typ === 'dialog' && e.personId === p.id && !e.ereignisId);
+  const kontingent = geplanteGespraeche(entwurf);
+  const voll = kontingent >= B.dialog.gespraecheProWoche && !geplant;
+  return (
+    <>
+      <Vertrauen wert={p.vertrauen} />
+      <h3>Was du weisst</h3>
+      {infos.filter((i) => i.bekannt).length === 0 ? (
+        <p className="klein">Noch nichts Persönliches.</p>
+      ) : (
+        <ul className="infoliste">
+          {infos
+            .filter((i) => i.bekannt)
+            .map((i) => (
+              <li key={i.schluessel}>
+                <strong>{i.titel}:</strong> {i.text}
+              </li>
+            ))}
+        </ul>
+      )}
+      {unbekannt > 0 && <p className="klein">? Es gibt noch mehr zu erfahren – mit Vertrauen und dem richtigen Gespräch.</p>}
+      {verfuegbar.length > 0 && !spiel.stand!.state.spielende && (
+        <>
+          <h3>Gespräch führen</h3>
+          <p className="klein">
+            Diese Woche geplant: {kontingent} von {B.dialog.gespraecheProWoche} Gesprächen.
+            {geplant && ' Mit dieser Person ist schon ein Gespräch geplant.'}
+          </p>
+          <div className="zeile">
+            {verfuegbar.map(({ dialog, gesperrt }) => (
+              <button
+                key={dialog.id}
+                className="knopf"
+                disabled={!!gesperrt || voll || (!!geplant && geplant.typ === 'dialog' && geplant.dialogId !== dialog.id)}
+                title={gesperrt ?? (voll ? 'Diese Woche sind keine Gespräche mehr möglich.' : dialog.beschreibung)}
+                onClick={() => starte(dialog.id)}
+              >
+                💬 {dialog.titel}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+      {p.gespraeche.length > 0 && (
+        <>
+          <h3>Bisherige Gespräche</h3>
+          <ul className="infoliste">
+            {[...p.gespraeche].reverse().map((g, i) => (
+              <li key={i}>
+                <span className="klein">
+                  S{g.saison} W{g.woche}
+                </span>{' '}
+                <strong>{g.titel}</strong> ({g.vertrauensAenderung >= 0 ? '+' : '−'}
+                {Math.abs(g.vertrauensAenderung)} Vertrauen): {g.ergebnis}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </>
+  );
+}
+
+function Detail({ spiel, s, p, schliessen, zeige, starte }: { spiel: SpielApi; s: GameState; p: Person; schliessen: () => void; zeige: (id: string) => void; starte: (dialogId: string) => void }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const d = ref.current;
@@ -108,7 +202,12 @@ function Detail({ s, p, schliessen, zeige }: { s: GameState; p: Person; schliess
             <Balken key={w.id} label={w.name} wert={p.werte[w.id]} max={20} />
           ))}
           <p className="klein">
-            Talent: {talentEinschaetzung(s, p) ? `Einschätzung des Trainerteams: ${talentEinschaetzung(s, p)}` : 'verborgen (erfahrene Trainer:innen können es einschätzen)'}
+            Talent:{' '}
+            {p.bekannt.includes('talent')
+              ? (infosVon(s, p).find((i) => i.schluessel === 'talent')?.text ?? '?')
+              : talentEinschaetzung(s, p)
+                ? `Einschätzung des Trainerteams: ${talentEinschaetzung(s, p)}`
+                : '? (erfahrene Trainer:innen können es einschätzen)'}
             {' · '}Einsatzzeit {Math.round(p.einsatzzeit * 100)} % · Beitrag CHF {Math.round(jahresbeitrag(s, p))}/Jahr
             {familie && haertefallAktiv(s, familie) && ' (Härtefall)'}
           </p>
@@ -141,14 +240,50 @@ function Detail({ s, p, schliessen, zeige }: { s: GameState; p: Person; schliess
       {p.rolle === 'elternteil' && (
         <>
           <Balken label="Stimmung gegenüber dem Verein" wert={p.stimmung} ton="auto" />
-          <p>{elternTyp(p.typ).beschreibung}</p>
+          <p>{p.bekannt.includes('typ') ? `${elternTyp(p.typ).name}: ${elternTyp(p.typ).beschreibung}` : 'Elterntyp: ? – noch nicht bekannt.'}</p>
           <Balken label="Engagement" wert={p.engagement} max={20} />
-          <Balken label="Konfliktbereitschaft" wert={p.konfliktbereitschaft} max={20} />
-          <Balken label="Zahlungsmoral" wert={p.zahlungsmoral} max={20} />
           <Balken label="Einfluss im Verein" wert={p.einfluss} max={20} />
-          {familie && <p className="klein">Einkommen der Familie: {familie.einkommen}</p>}
+          {p.bekannt.includes('typ') ? (
+            <>
+              <Balken label="Konfliktbereitschaft" wert={p.konfliktbereitschaft} max={20} />
+              <Balken label="Zahlungsmoral" wert={p.zahlungsmoral} max={20} />
+            </>
+          ) : (
+            <p className="klein">Konfliktbereitschaft und Zahlungsmoral: ?</p>
+          )}
+          {p.helfer && (
+            <p>
+              <Badge ton="gut">{p.helfer === 'fahrdienst' ? 'Fahrdienst' : 'Hilfe bei Anlässen'}</Badge> {s.teams[p.helferTeamId ?? '']?.name} · Auslastung{' '}
+              {Math.round(p.auslastung)}{' '}
+              <button className="knopf klein" onClick={() => spiel.entscheiden({ typ: 'helferBeenden', elternteilId: p.id })}>
+                Entlasten
+              </button>
+            </p>
+          )}
+          {familie && (
+            <p className="klein">
+              Foto-Einwilligung für Social Media: {familie.fotoEinwilligung ? 'ja' : 'nein'}
+            </p>
+          )}
+          {familie && familie.ausstand > 0 && (
+            <p className="hinweis warn">
+              Offene Beiträge der Familie: {chf(familie.ausstand)}
+              {familie.ratenzahlung ? ' (Ratenzahlung läuft)' : familie.saeumig ? ' (zahlt zurzeit nicht)' : ''}
+            </p>
+          )}
         </>
       )}
+
+      {p.rolle === 'vorstand' && (
+        <>
+          <p>
+            <strong>{amtName(p.amt)}</strong> · Haltung zu den Junioren: <Badge ton={haltungKategorie(p.haltung) === 'unterstuetzer' ? 'gut' : haltungKategorie(p.haltung) === 'skeptisch' ? 'warn' : undefined}>{HALTUNG_NAMEN[haltungKategorie(p.haltung)]}</Badge>
+          </p>
+          <p className="klein">Priorität: {p.bekannt.includes('prioritaet') ? prioritaetName(p.prioritaet) : '? – im Gespräch herausfinden'}</p>
+        </>
+      )}
+
+      <Gespraeche spiel={spiel} s={s} p={p} starte={starte} />
 
       {verwandte.length > 0 && (
         <>
@@ -173,11 +308,13 @@ export function Personen({ spiel }: { spiel: SpielApi }) {
   const [filter, setFilter] = useState<Filter>('kinder');
   const [suche, setSuche] = useState('');
   const [auswahl, setAuswahl] = useState<string | null>(null);
+  const [gespraech, setGespraech] = useState<{ dialogId: string; personId: string } | null>(null);
 
   const liste = useMemo(() => {
     let personen: Person[];
     if (filter === 'kinder') personen = Object.values(s.kinder).filter((k) => k.status !== 'ausgetreten');
     else if (filter === 'trainer') personen = Object.values(s.trainer).filter((t) => t.status === 'aktiv');
+    else if (filter === 'vorstand') personen = Object.values(s.vorstand.mitglieder);
     else if (filter === 'ehemalige') personen = [...Object.values(s.kinder).filter((k) => k.status === 'ausgetreten'), ...Object.values(s.trainer).filter((t) => t.status !== 'aktiv')];
     else {
       const aktiveFam = new Set(Object.values(s.kinder).filter((k) => k.status !== 'ausgetreten').map((k) => k.familieId));
@@ -188,7 +325,7 @@ export function Personen({ spiel }: { spiel: SpielApi }) {
     return personen.sort((a, b) => a.nachname.localeCompare(b.nachname) || a.vorname.localeCompare(b.vorname));
   }, [s, filter, suche]);
 
-  const person = auswahl ? (s.kinder[auswahl] ?? s.trainer[auswahl] ?? s.eltern[auswahl]) : undefined;
+  const person = auswahl ? (s.kinder[auswahl] ?? s.trainer[auswahl] ?? s.eltern[auswahl] ?? s.vorstand.mitglieder[auswahl]) : undefined;
 
   return (
     <div className="stapel">
@@ -200,6 +337,7 @@ export function Personen({ spiel }: { spiel: SpielApi }) {
                 ['kinder', 'Kinder'],
                 ['trainer', 'Trainer:innen'],
                 ['eltern', 'Eltern'],
+                ['vorstand', 'Vorstand'],
                 ['ehemalige', 'Ehemalige']
               ] as [Filter, string][]
             ).map(([id, label]) => (
@@ -233,7 +371,18 @@ export function Personen({ spiel }: { spiel: SpielApi }) {
           })}
         </ul>
       </Karte>
-      {person && <Detail key={person.id} s={s} p={person} schliessen={() => setAuswahl(null)} zeige={setAuswahl} />}
+      {person && !gespraech && (
+        <Detail
+          key={person.id}
+          spiel={spiel}
+          s={s}
+          p={person}
+          schliessen={() => setAuswahl(null)}
+          zeige={setAuswahl}
+          starte={(dialogId) => setGespraech({ dialogId, personId: person.id })}
+        />
+      )}
+      {gespraech && <Gespraech spiel={spiel} dialogId={gespraech.dialogId} personId={gespraech.personId} schliessen={() => setGespraech(null)} />}
     </div>
   );
 }

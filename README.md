@@ -4,8 +4,10 @@ Rundenbasiertes Managerspiel im Browser: Du bist Juniorenverantwortliche:r eines
 und baust über mehrere Saisons eine Juniorenabteilung nach den Grundsätzen von Jugend+Sport auf.
 Ziel: möglichst viele und möglichst glückliche Junior:innen.
 
-Aktueller Stand: **Etappe 1** – eine spielbare Saison mit Teams, Trainer:innen, Wochenplanung,
-Zufriedenheit, Wirtschaft, simuliertem Wettkampf (Ligen, Finalturniere, Playoffs) und 15 Ereignissen.
+Aktueller Stand: **Etappe 3** – mehrere Saisons bis zur gewählten Laufzeit mit Teams, Trainer:innen,
+Wochenplanung, Zufriedenheit, Wirtschaft, simuliertem Wettkampf, Eltern-Einfluss und Gesprächen,
+dazu Vorstand mit Sitzungen und GV, Social Media, Sponsoren, Aktionen zur Geldbeschaffung,
+Endbewertung und Saisonchronik. Ein Lernmodus verhindert das vorzeitige Spielende.
 
 - Spielkonzept: [docs/spielkonzept.md](docs/spielkonzept.md)
 - Entscheide während der Umsetzung: [docs/entscheide.md](docs/entscheide.md)
