@@ -241,7 +241,15 @@ export function elternWoche(state: GameState, info: WochenInfo, teamsMitSpiel: S
 }
 
 /** Elternabend für ein Team (Entscheid). */
-export function elternabend(state: GameState, team: Team, info: WochenInfo, buchungen: Buchung[], meldungen: string[]): void {
+export function elternabend(
+  state: GameState,
+  team: Team,
+  info: WochenInfo,
+  buchungen: Buchung[],
+  meldungen: string[],
+  /** false in der Vorschau: Beobachtungen erst bei der echten Simulation */
+  aufdecken = true
+): void {
   const A = B.eltern.elternabend;
   const faktor = info.phase === 'trainingsstart' ? A.trainingsstartFaktor : 1;
   buchen(state, { kategorie: 'elternarbeit', text: `Elternabend ${team.name}`, betrag: -A.kosten }, buchungen);
@@ -251,7 +259,7 @@ export function elternabend(state: GameState, team: Team, info: WochenInfo, buch
     e.stimmung = clamp(e.stimmung + A.stimmung * faktor, 0, 100);
     e.vertrauen = clamp(e.vertrauen + A.vertrauen * faktor, -100, 100);
     e.engagement = clamp(e.engagement + 1, 1, 20);
-    if ((e.einfluss >= A.auffaelligEinfluss || e.konfliktbereitschaft >= A.auffaelligKonflikt) && !e.bekannt.includes('typ')) {
+    if (aufdecken && (e.einfluss >= A.auffaelligEinfluss || e.konfliktbereitschaft >= A.auffaelligKonflikt) && !e.bekannt.includes('typ')) {
       e.bekannt.push('typ');
       aufgefallen.push(name(e));
     }

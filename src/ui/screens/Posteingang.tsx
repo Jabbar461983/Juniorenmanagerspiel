@@ -2,8 +2,15 @@ import { useState } from 'react';
 import { ereignisVorlage, optionText, type EreignisInstanz, type GameState, type Nachricht } from '../../engine';
 import { Badge, Karte, Leer } from '../components/Basis';
 import type { SpielApi } from '../useSpiel';
+import { Gespraech } from '../components/Gespraech';
 
-function EreignisKarte({ spiel, inst, s }: { spiel: SpielApi; inst: EreignisInstanz; s: GameState }) {
+interface GespraechStart {
+  dialogId: string;
+  personId: string;
+  ereignis: { id: string; optionId: string; beteiligte: EreignisInstanz['beteiligte'] };
+}
+
+function EreignisKarte({ spiel, inst, s, starte }: { spiel: SpielApi; inst: EreignisInstanz; s: GameState; starte: (g: GespraechStart) => void }) {
   const gewaehlt = spiel.stand!.entwurf.find((e) => e.typ === 'ereignis' && e.ereignisId === inst.id) as
     | { optionId: string }
     | undefined;
@@ -25,6 +32,24 @@ function EreignisKarte({ spiel, inst, s }: { spiel: SpielApi; inst: EreignisInst
           <legend className="sr-only">Antwort wählen</legend>
           {vorlage.optionen.map((o) => {
             const verfuegbar = inst.verfuegbareOptionen.includes(o.id);
+            if (o.dialog) {
+              const personId = inst.beteiligte[o.dialogPerson ?? ''];
+              const gefuehrt = gewaehlt?.optionId === o.id;
+              return (
+                <button
+                  key={o.id}
+                  className={`option option-dialog ${gefuehrt ? 'gewaehlt' : ''}`}
+                  disabled={!verfuegbar || !personId}
+                  onClick={() => personId && starte({ dialogId: o.dialog!, personId, ereignis: { id: inst.id, optionId: o.id, beteiligte: inst.beteiligte } })}
+                >
+                  <span aria-hidden="true">💬</span>
+                  <span>
+                    {optionText(s, inst, o.id)}
+                    {gefuehrt && <strong> – Gespräch geführt (erneut führen)</strong>}
+                  </span>
+                </button>
+              );
+            }
             return (
               <label key={o.id} className={`option ${gewaehlt?.optionId === o.id ? 'gewaehlt' : ''} ${verfuegbar ? '' : 'deaktiviert'}`}>
                 <input
@@ -52,6 +77,7 @@ export function Posteingang({ spiel }: { spiel: SpielApi }) {
   const s = spiel.stand!.state;
   const [filter, setFilter] = useState<'alle' | 'offen'>('offen');
   const [offenId, setOffenId] = useState<string | null>(null);
+  const [gespraech, setGespraech] = useState<GespraechStart | null>(null);
   const offene = s.ereignisse.filter((e) => !e.erledigt).sort((a, b) => Number(b.pflicht) - Number(a.pflicht));
   const nachrichten = [...s.posteingang].reverse().filter((n) => filter === 'alle' || !n.gelesen || (n.ereignisId && offene.some((e) => e.id === n.ereignisId)));
 
@@ -64,7 +90,7 @@ export function Posteingang({ spiel }: { spiel: SpielApi }) {
   return (
     <div className="stapel">
       <Karte titel={`Offene Ereignisse (${offene.length})`}>
-        {offene.length === 0 ? <Leer>Keine offenen Ereignisse.</Leer> : offene.map((inst) => <EreignisKarte key={inst.id} spiel={spiel} inst={inst} s={s} />)}
+        {offene.length === 0 ? <Leer>Keine offenen Ereignisse.</Leer> : offene.map((inst) => <EreignisKarte key={inst.id} spiel={spiel} inst={inst} s={s} starte={setGespraech} />)}
       </Karte>
       <Karte
         titel="Nachrichten"
@@ -105,6 +131,9 @@ export function Posteingang({ spiel }: { spiel: SpielApi }) {
           </ul>
         )}
       </Karte>
+      {gespraech && (
+        <Gespraech spiel={spiel} dialogId={gespraech.dialogId} personId={gespraech.personId} ereignis={gespraech.ereignis} schliessen={() => setGespraech(null)} />
+      )}
     </div>
   );
 }

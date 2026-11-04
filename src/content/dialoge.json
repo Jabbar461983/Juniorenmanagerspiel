@@ -16,6 +16,7 @@
               "id": "a",
               "text": "Ja! Wie erlebt {kind.vorname} das Training bisher?",
               "ton": "empathisch",
+              "vertrauen": 3,
               "offenbart": [
                 "typ"
               ],
@@ -42,6 +43,7 @@
               "id": "a",
               "text": "Nur? Erzähl ruhig, das bleibt unter uns.",
               "ton": "empathisch",
+              "vertrauen": 3,
               "offenbart": [
                 "typ",
                 "finanzielleSorgen",
@@ -51,7 +53,7 @@
                 "trainerwunsch"
               ],
               "weiter": {
-                "vertrauenAb": 15,
+                "vertrauenAb": 12,
                 "dann": "k3",
                 "sonst": "k4"
               }
@@ -64,7 +66,7 @@
                 "typ"
               ],
               "weiter": {
-                "vertrauenAb": 15,
+                "vertrauenAb": 12,
                 "dann": "k3",
                 "sonst": "k4"
               }
@@ -993,7 +995,7 @@
               "text": "Wie geht es dir eigentlich im Team?",
               "ton": "empathisch",
               "weiter": {
-                "vertrauenAb": 10,
+                "vertrauenAb": 5,
                 "dann": "k2",
                 "sonst": "k3"
               }
@@ -1336,7 +1338,7 @@
               "text": "Wie geht es dir persönlich mit dem Trainerjob?",
               "ton": "empathisch",
               "weiter": {
-                "vertrauenAb": 8,
+                "vertrauenAb": 5,
                 "dann": "k2",
                 "sonst": "k3"
               }

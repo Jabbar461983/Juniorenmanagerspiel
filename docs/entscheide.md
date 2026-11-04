@@ -40,3 +40,36 @@ Laufende Liste von Entscheiden, die über das Spielkonzept hinausgehen. Neueste 
 - Balancing ist ein erster Wurf auf Basis von Probeläufen (passive Spielweise: ca. 40–50 Kinder, Zufriedenheit 60–67 am Saisonende). Werte nach Testspielen justieren.
 - J+S-Regeln (Kursnamen, Altersgrenzen, Beiträge) sind noch nicht an offiziellen Unterlagen geprüft – betrifft Etappe 4.
 - Zahlungsmoral der Eltern ist im Datenmodell, wirkt aber noch nicht.
+
+## Etappe 2: Eltern-Einfluss und Dialogsystem
+
+### Mit der Auftraggeberin / dem Auftraggeber geklärt
+- **2 Gespräche pro Woche** (`dialog.gespraecheProWoche`). Gespräche aus Ereignissen zählen nicht dazu. Pro Person höchstens ein Gespräch pro Woche; derselbe Dialog mit derselben Person erst wieder nach 3 Wochen.
+- **Elterntypen sind verborgen** und werden aufgedeckt durch Gespräche, Elternabende (auffällige Eltern: viel Einfluss oder hohe Konfliktbereitschaft) oder Beobachtung in Ereignissen. Rund 25 % sind zu Spielbeginn aus den «Übergabenotizen» bekannt. Konfliktbereitschaft und Zahlungsmoral werden erst mit dem Typ sichtbar. Bestehende Spielstände aus Etappe 1 behalten sichtbare Typen.
+- **Ausstände mit Mahnungen:** Säumige Familien zahlen nicht, der Betrag wird zum Ausstand. Ab CHF 60 meldet sich die Kassier:in (Ereignis) mit den Optionen freundlich erinnern, formell mahnen, persönlich nachfragen (Dialog) oder abschreiben. Weitere Wege: Ratenzahlung, Härtefall.
+
+### Technik
+- **Dialoge sind Entscheide:** `{ typ: 'dialog', dialogId, personId, antworten[] }`. `dialogAuswerten()` spielt die Antworten **ohne Zufall** durch. Die Oberfläche nutzt dieselbe Funktion für die Anzeige, der Spielkern für die Anwendung. Spielstand plus Entscheide bleiben damit reproduzierbar, und ein Dialog bleibt bis «Woche simulieren» änderbar.
+- Ereignis-Optionen können mit `dialog` und `dialogPerson` ein Gespräch starten. Die Oberfläche speichert dann Ereignis-Entscheid und Gespräch gemeinsam. Standardoptionen starten nie einen Dialog.
+- Verzweigungen im Dialog hängen vom Vertrauen (`vertrauenAb`) oder von Bedingungen (z.B. `bereitschaftAb` für Helfer:innen) ab. Das Gegenüber «entscheidet» damit deterministisch aus seinen Werten.
+- Verborgene Infos werden live aus dem Spielstand berechnet (`engine/infos.ts`). `person.bekannt` hält nur fest, was offenbart wurde.
+- Die Vorschau wendet Gespräche an, Elternabende decken aber erst bei der echten Simulation Elterntypen auf (sonst liesse sich durch Planen und Absagen spicken).
+- Schema-Version 2 mit Migration von Version 1.
+
+### Spielmechanik
+- **Vertrauen** (−100 bis +100) pro Person. Grundwirkung des Tons: empathisch +5, sachlich +2, bestimmt −1, ausweichend −5. Elterntyp, Konfliktbereitschaft und Charakterzüge von Kindern verändern die Wirkung (z.B. Kritiker:innen schätzen Sachlichkeit). Vertrauen verblasst um 1 % pro Woche und wirkt leicht auf die Zufriedenheit (Trainerbeziehung, Elterneinfluss). Ein Gespräch verändert die Elternstimmung um die halbe Vertrauensänderung.
+- **Offenbaren** ab Vertrauen 12 im Moment der Antwort.
+- **Ansteckung:** Die Elternstimmung nähert sich pro Woche um 5 % dem nach Einfluss gewichteten Teammittel und um 3 % befreundeten Eltern an. Freundschaften zwischen Familien im selben Team entstehen beim Spielstart und bei Neueintritten.
+- **Zahlungsmoral:** Wöchentliche Wahrscheinlichkeit, säumig zu werden, steigt mit tiefer Zahlungsmoral und tiefem Einkommen; säumige Familien erholen sich mit 12 % pro Woche von selbst. Ratenzahlung trägt den Ausstand mit mindestens 15 % pro Woche ab. Formelles Mahnen verärgert und erhöht das Austrittsrisiko (doppelt bei tiefem Einkommen).
+- **Fahrdienst:** Kinder, deren Eltern alle «abwesend» sind, kommen ohne Fahrdienst im Team seltener an Wettkämpfe (Anwesenheit ×0.6) und verlieren Motivation. Fahrdienst entlastet die Trainer:innen in Spielwochen; Helfer:innen werden ausgelastet und über 75 unzufrieden.
+- **Elternabend:** höchstens 2 pro Team und Saison, CHF 60, im Trainingsstart 1.5-fache Wirkung. Setzt transparente Einsatzregeln.
+- **Interessenkonflikt:** Elternteil im Trainerteam des eigenen Kindes ohne transparente Einsatzregeln: Das eigene Kind bekommt mehr Einsatzzeit, die anderen Eltern werden langsam unzufrieden.
+- **Inhalte:** 14 Dialoge (Kennenlernen, Einsatzzeit, Hilfsleiter:in, Fahrdienst, Kritik im Chat, Kosten, Ausstand, Bande, Befinden Kind, Kind will aufhören, Prüfungsstress, Befinden Trainer:in, Einschätzung der Kinder, Teamsitzung) und 10 neue Ereignisse (insgesamt 25). Fünf bestehende Ereignisse sind mit Gesprächen verknüpft.
+
+### Probeläufe (eine Saison, 4 Seeds)
+| Spielweise | Ø Kinder am Ende | Ø Zufriedenheit | Ø Punkte | Ø Kasse |
+| --- | --- | --- | --- | --- |
+| passiv (nur Pflicht-Ereignisse, ohne Gespräche) | 43 | 66.1 | 195 | CHF 8’535 |
+| aktiv (Elternabende, Fahrdienst, 2 Gespräche/Woche, Ereignis-Gespräche) | 48 | 68.4 | 229 | CHF 7’724 |
+
+Aktive Elternarbeit lohnt sich spürbar, ohne übermächtig zu sein. Ausstände liegen bei CHF 100–270 pro Saison.

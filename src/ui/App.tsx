@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { aktuelleWoche, chf, datumText, PHASEN_NAMEN } from '../engine';
+import { B, aktuelleWoche, chf, datumText, PHASEN_NAMEN } from '../engine';
+import { geplanteGespraeche } from './entwurf';
 import { useSpiel } from './useSpiel';
 import { Start } from './screens/Start';
 import { Uebersicht } from './screens/Uebersicht';
@@ -71,6 +72,11 @@ export function App() {
           <div className="kopf-zeit">
             {state.spielende ? `Saison ${state.saison - 1} abgeschlossen` : `Saison ${state.saison} · Woche ${state.woche}/52 · ${datumText(info.montag)}`}
           </div>
+          {!state.spielende && (
+            <div className="kopf-zeit">
+              Gespräche diese Woche: {geplanteGespraeche(spiel.stand.entwurf)}/{B.dialog.gespraecheProWoche}
+            </div>
+          )}
           <div className="kopf-phase">
             {state.spielende ? 'Spielende' : PHASEN_NAMEN[info.phase]}
             {!state.spielende && info.ferien && <span className="badge badge-info">{info.ferien.name}</span>}

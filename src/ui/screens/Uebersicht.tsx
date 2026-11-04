@@ -13,6 +13,8 @@ import {
   teamKinder,
   teamTrainer,
   teamsVonTrainer,
+  teamEltern,
+  teamHatFahrdienst,
   type GameState
 } from '../../engine';
 import type { Ansicht } from '../App';
@@ -35,6 +37,22 @@ function hinweise(s: GameState): { text: string; ziel: Ansicht }[] {
     if (teamsVonTrainer(s, t.id).length === 0) res.push({ text: `${t.vorname} ${t.nachname} ist keinem Team zugeteilt.`, ziel: 'teams' });
   }
   if (s.finanzen.kasse < 0) res.push({ text: 'Die Kasse ist im Minus.', ziel: 'finanzen' });
+  for (const e of Object.values(s.eltern)) {
+    if (e.helfer && e.auslastung > B.eltern.helfer.limit) res.push({ text: `${e.vorname} ${e.nachname} ist als Helfer:in am Limit.`, ziel: 'personen' });
+  }
+  const ausstand = Object.values(s.familien).reduce((a, f) => a + f.ausstand, 0);
+  if (ausstand >= B.eltern.zahlung.mahnSchwelle) res.push({ text: `Offene Mitgliederbeiträge: ${chf(ausstand)}.`, ziel: 'finanzen' });
+  const ohneFahrdienst = Object.values(s.teams).filter((t) => !teamHatFahrdienst(s, t.id) && teamKinder(s, t.id).length > 0 && t.stufe !== 'U18');
+  if (ohneFahrdienst.length > 0) {
+    res.push({ text: `Ohne Fahrdienst: ${ohneFahrdienst.map((t) => t.name).join(', ')}. Frag Eltern in der Teamansicht an.`, ziel: 'teams' });
+  }
+  for (const team of Object.values(s.teams)) {
+    const eltern = teamEltern(s, team.id);
+    const unzufrieden = eltern.filter((e) => e.stimmung < 40).length;
+    if (eltern.length > 0 && unzufrieden >= Math.max(2, eltern.length / 4)) {
+      res.push({ text: `Bei ${team.name} sind ${unzufrieden} Eltern unzufrieden – die Stimmung kann sich ausbreiten.`, ziel: 'teams' });
+    }
+  }
   return res;
 }
 

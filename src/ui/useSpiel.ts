@@ -27,6 +27,8 @@ export interface SpielApi {
   uebernehmen: (stand: Spielstand) => Promise<void>;
   schliessen: () => void;
   entscheiden: (e: Entscheid) => void;
+  /** mehrere Entscheide auf einmal (z.B. Ereignis-Option plus Gespräch) */
+  entscheidenMehrere: (e: Entscheid[]) => void;
   entfernen: (index: number) => void;
   simulieren: () => Promise<boolean>;
   speichernUnter: (name: string) => Promise<void>;
@@ -102,6 +104,10 @@ export function useSpiel(): SpielApi {
     setStand((s) => (s ? { ...s, entwurf: entscheidHinzufuegen(s.entwurf, e) } : s));
   }, []);
 
+  const entscheidenMehrere = useCallback((liste: Entscheid[]) => {
+    setStand((s) => (s ? { ...s, entwurf: liste.reduce((acc, e) => entscheidHinzufuegen(acc, e), s.entwurf) } : s));
+  }, []);
+
   const entfernen = useCallback((index: number) => {
     setStand((s) => (s ? { ...s, entwurf: s.entwurf.filter((_, i) => i !== index) } : s));
   }, []);
@@ -167,6 +173,7 @@ export function useSpiel(): SpielApi {
       setBericht(null);
     },
     entscheiden,
+    entscheidenMehrere,
     entfernen,
     simulieren,
     speichernUnter,

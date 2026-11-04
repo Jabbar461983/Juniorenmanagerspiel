@@ -176,6 +176,34 @@ export function Finanzen({ spiel }: { spiel: SpielApi }) {
         )}
       </Karte>
 
+      <Karte titel="Offene Beiträge">
+        {(() => {
+          const familien = Object.values(s.familien).filter((x) => x.ausstand > 0).sort((a, b) => b.ausstand - a.ausstand);
+          if (familien.length === 0) return <p className="leer">Alle Beiträge sind bezahlt.</p>;
+          return (
+            <>
+              <p>
+                Total offen: <strong>{chf(familien.reduce((a, x) => a + x.ausstand, 0))}</strong>. Bei grösseren Beträgen meldet sich die Kassier:in im Posteingang;
+                persönliche Gespräche führst du über die Personenansicht.
+              </p>
+              <ul className="liste">
+                {familien.map((x) => (
+                  <li key={x.id} className="liste-zeile">
+                    <span>Familie {x.nachname}</span>
+                    <span className="zeile">
+                      {x.ratenzahlung && <Badge ton="info">Ratenzahlung</Badge>}
+                      {x.saeumig && <Badge ton="warn">zahlt zurzeit nicht</Badge>}
+                      {x.haertefall && <Badge>Härtefall</Badge>}
+                      <strong>{chf(x.ausstand)}</strong>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          );
+        })()}
+      </Karte>
+
       <Karte titel={`Buchungen Saison ${s.saison}`}>
         <div className="tabelle-huelle">
           <table className="tabelle">

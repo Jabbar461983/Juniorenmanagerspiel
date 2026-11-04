@@ -5,7 +5,7 @@ Streethockey-Vereins nach den Grundsätzen von Jugend+Sport. Ziel: möglichst vi
 glückliche Junior:innen. Vollständiges Konzept: `docs/spielkonzept.md`. Entscheide aus der
 Umsetzung: `docs/entscheide.md`. Etappen-Prompts: `docs/prompts/`.
 
-Stand: **Etappe 1 von 6** umgesetzt (Kern-Simulation, Teams, Wirtschaft, Wettkampf, Ereignisse).
+Stand: **Etappe 2 von 6** umgesetzt (Etappe 1: Kern-Simulation, Teams, Wirtschaft, Wettkampf, Ereignisse; Etappe 2: Eltern-Einfluss und Dialogsystem).
 
 ## Befehle
 
@@ -21,7 +21,7 @@ Nach jeder grösseren Änderung: `npm test` und `npm run build`.
 ```
 src/
   engine/     reiner TypeScript-Spielkern – KEIN React, KEINE Browser-APIs (kein window, fetch, IndexedDB)
-  content/    JSON-Inhalte: balancing.json, ereignisse.json, namen.json, charakterzuege.json, ferien.json, anwerbung.json, gegner.json
+  content/    JSON-Inhalte: balancing.json, ereignisse.json, dialoge.json, namen.json, charakterzuege.json, ferien.json, anwerbung.json, gegner.json
   ui/         React-Oberfläche (liest den Spielkern nur über src/engine/index.ts)
   storage/    SaveRepository-Interface, IndexedDB- und Memory-Umsetzung, JSON-Export/-Import
 public/portraits/   Bildpool (portraits.json + {gruppe}_{nummer}_{stimmung}.webp)
@@ -42,6 +42,11 @@ public/portraits/   Bildpool (portraits.json + {gruppe}_{nummer}_{stimmung}.webp
 - Entscheide sind ein diskriminierter Union-Typ `Entscheid` (`engine/types.ts`), angewendet in `engine/entscheide.ts`.
   Die UI sammelt sie als Wochen-Entwurf und zeigt eine Vorschau über `vorschau()`.
 - Pflicht-Ereignisse blockieren `simulateWeek` (`PflichtEreignisOffenError`).
+- Dialoge (`src/content/dialoge.json`, Logik in `engine/dialoge.ts`) sind Entscheide mit einer Liste gewählter Antworten.
+  `dialogAuswerten()` ist rein und **ohne Zufall** – keine `zufall`-Effekte in Dialogen verwenden. Neue Bedingungstypen
+  in `engine/dialoge.ts` und im Typ `DialogBedingung` (`engine/config.ts`) ergänzen.
+- Verborgene Infos werden in `engine/infos.ts` aus dem Spielstand berechnet; `person.bekannt` speichert nur die offenbarten Schlüssel.
+- Eltern-Einfluss (Ansteckung, Zahlungen, Helfer:innen, Elternabend) liegt in `engine/eltern.ts`.
 
 ### Vorbereitet für spätere Etappen
 

@@ -284,7 +284,7 @@ export function wendeEntscheideAn(
           break;
         }
         const ctx = ereignisKontext ?? { buchungen: [], meldungen: [], schnupper: [] };
-        elternabend(state, team, aktuelleWoche(state), ctx.buchungen, ctx.meldungen);
+        elternabend(state, team, aktuelleWoche(state), ctx.buchungen, ctx.meldungen, ereignisKontext !== null);
         break;
       }
       case 'helferBeenden': {

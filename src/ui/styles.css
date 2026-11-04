@@ -1146,3 +1146,157 @@ dialog.detail::backdrop {
     animation: none !important;
   }
 }
+
+/* ---------- Etappe 2: Gespräche und Vertrauen ---------- */
+
+.vertrauen {
+  display: grid;
+  grid-template-columns: minmax(0, 9rem) 1fr 4.5rem;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 0.4rem 0;
+}
+.vertrauen-skala {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid var(--rand);
+  background: linear-gradient(90deg, var(--schlecht-hell), var(--flaeche-2) 50%, var(--gut-hell));
+}
+.vertrauen-mitte {
+  position: absolute;
+  left: 50%;
+  top: -3px;
+  bottom: -3px;
+  width: 1px;
+  background: var(--text-2);
+}
+.vertrauen-marke {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--primaer);
+  border: 2px solid var(--flaeche);
+  transform: translate(-50%, -50%);
+  transition: left 0.3s ease;
+}
+.vertrauen-zahl {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  font-size: 0.9rem;
+}
+
+dialog.gespraech {
+  width: min(680px, calc(100% - 1.5rem));
+}
+.gespraech-verlauf {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.sprechblase {
+  border-radius: 12px;
+  padding: 0.55rem 0.8rem;
+  margin: 0.4rem 0;
+  max-width: 88%;
+}
+.sprechblase.gegenueber {
+  background: var(--flaeche-2);
+  border-top-left-radius: 4px;
+}
+.sprechblase.gegenueber.aktuell {
+  border: 1px solid var(--primaer);
+}
+.sprechblase.ich {
+  background: var(--primaer-hell);
+  margin-left: auto;
+  border-top-right-radius: 4px;
+}
+.ton {
+  font-weight: 700;
+  color: var(--primaer);
+}
+.gespraech-antworten {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0.5rem 0;
+}
+.antwort {
+  font: inherit;
+  color: var(--text);
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  border: 1px solid var(--rand);
+  border-left-width: 4px;
+  border-radius: 8px;
+  padding: 0.55rem 0.75rem;
+  background: var(--flaeche);
+  cursor: pointer;
+}
+.antwort:hover:not(:disabled) {
+  background: var(--flaeche-2);
+}
+.antwort:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.antwort-ton {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-2);
+}
+.antwort.ton-empathisch {
+  border-left-color: var(--gut);
+}
+.antwort.ton-sachlich {
+  border-left-color: var(--info);
+}
+.antwort.ton-bestimmt {
+  border-left-color: var(--warn);
+}
+.antwort.ton-ausweichend {
+  border-left-color: var(--rand);
+}
+.gespraech-knoepfe {
+  justify-content: flex-end;
+  margin: 0.75rem 0 0.25rem;
+}
+.option-dialog {
+  font: inherit;
+  color: var(--text);
+  background: var(--flaeche);
+  display: flex;
+  text-align: left;
+  width: 100%;
+}
+.option-dialog:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.infoliste {
+  margin: 0 0 0.5rem;
+  padding-left: 1.1rem;
+}
+.infoliste li {
+  margin: 0.2rem 0;
+}
+@media (max-width: 520px) {
+  .vertrauen {
+    grid-template-columns: minmax(0, 6rem) 1fr 4rem;
+  }
+  .sprechblase {
+    max-width: 100%;
+  }
+}
+
+.zeile.abstand {
+  gap: 1.25rem;
+  margin-top: 0.5rem;
+}
