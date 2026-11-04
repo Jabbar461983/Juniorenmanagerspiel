@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { B, aktuelleWoche, chf, datumText, PHASEN_NAMEN } from '../engine';
+import { B, aktuelleWoche, chf, datumText, istSitzungswoche, PHASEN_NAMEN } from '../engine';
 import { geplanteGespraeche } from './entwurf';
 import { useSpiel } from './useSpiel';
 import { Start } from './screens/Start';
@@ -11,15 +11,19 @@ import { Finanzen } from './screens/Finanzen';
 import { Wettkampf } from './screens/Wettkampf';
 import { Wochenbericht } from './screens/Wochenbericht';
 import { Speichern } from './screens/Speichern';
+import { Vorstand } from './screens/Vorstand';
+import { SocialMedia } from './screens/SocialMedia';
 
-export type Ansicht = 'uebersicht' | 'posteingang' | 'teams' | 'personen' | 'finanzen' | 'wettkampf' | 'bericht' | 'speichern';
+export type Ansicht = 'uebersicht' | 'posteingang' | 'teams' | 'personen' | 'vorstand' | 'finanzen' | 'social' | 'wettkampf' | 'bericht' | 'speichern';
 
 const NAV: { id: Ansicht; label: string }[] = [
   { id: 'uebersicht', label: 'Übersicht' },
   { id: 'posteingang', label: 'Posteingang' },
   { id: 'teams', label: 'Teams' },
   { id: 'personen', label: 'Personen' },
+  { id: 'vorstand', label: 'Vorstand' },
   { id: 'finanzen', label: 'Finanzen' },
+  { id: 'social', label: 'Social Media' },
   { id: 'wettkampf', label: 'Kalender & Wettkampf' },
   { id: 'bericht', label: 'Wochenbericht' },
   { id: 'speichern', label: 'Speichern/Laden' }
@@ -70,11 +74,17 @@ export function App() {
         <div className="kopf-info">
           <div className="kopf-verein">{state.verein.name}</div>
           <div className="kopf-zeit">
-            {state.spielende ? `Saison ${state.saison - 1} abgeschlossen` : `Saison ${state.saison} · Woche ${state.woche}/52 · ${datumText(info.montag)}`}
+            {state.spielende
+              ? state.spielende.grund === 'laufzeit' || state.spielende.grund === 'etappenEnde'
+                ? `Saison ${state.saison - 1} abgeschlossen`
+                : `Saison ${state.saison}, Woche ${state.woche}`
+              : `Saison ${state.saison} · Woche ${state.woche}/52 · ${datumText(info.montag)}`}
           </div>
           {!state.spielende && (
             <div className="kopf-zeit">
-              Gespräche diese Woche: {geplanteGespraeche(spiel.stand.entwurf)}/{B.dialog.gespraecheProWoche}
+              Gespräche: {geplanteGespraeche(spiel.stand.entwurf)}/{B.dialog.gespraecheProWoche} · Einfluss {Math.round(state.verein.vorstandEinfluss)}
+              {istSitzungswoche(state) && ' · Vorstandssitzung diese Woche'}
+              {state.lernmodus && ' · Lernmodus'}
             </div>
           )}
           <div className="kopf-phase">
@@ -129,7 +139,9 @@ export function App() {
         {ansicht === 'posteingang' && <Posteingang spiel={spiel} />}
         {ansicht === 'teams' && <Teams spiel={spiel} />}
         {ansicht === 'personen' && <Personen spiel={spiel} />}
+        {ansicht === 'vorstand' && <Vorstand spiel={spiel} />}
         {ansicht === 'finanzen' && <Finanzen spiel={spiel} />}
+        {ansicht === 'social' && <SocialMedia spiel={spiel} />}
         {ansicht === 'wettkampf' && <Wettkampf spiel={spiel} />}
         {ansicht === 'bericht' && <Wochenbericht spiel={spiel} />}
         {ansicht === 'speichern' && <Speichern spiel={spiel} />}

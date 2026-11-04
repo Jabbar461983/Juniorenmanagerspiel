@@ -295,7 +295,7 @@ describe('Migration Etappe 2 → 3 und mehrere Saisons', () => {
   });
 
   it('drei Saisons sind reproduzierbar', () => {
-    const extra = (s: GameState, i: number): Entscheid[] =>
+    const extra = (_s: GameState, i: number): Entscheid[] =>
       i % 4 === 1 ? [{ typ: 'antrag', antragTyp: 'material', betrag: 600 }, { typ: 'post', postTyp: 'training', teamId: null, bilder: 'keine', werbung: 50 }] : [];
     const a = simuliereWochen(testSpiel(2030), 156, extra);
     const b = simuliereWochen(testSpiel(2030), 156, extra);

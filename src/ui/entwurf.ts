@@ -23,6 +23,14 @@ export function entscheidSchluessel(e: Entscheid): string | null {
       return `elternabend:${e.teamId}`;
     case 'helferBeenden':
       return `helfer:${e.elternteilId}`;
+    case 'sitzungVorbereiten':
+      return 'vorbereiten';
+    case 'sponsorSuche':
+      return 'sponsorSuche';
+    case 'aktivitaet':
+      return `aktivitaet:${e.aktivitaetId}`;
+    case 'antragZurueckziehen':
+      return `zurueck:${e.antragId}`;
     default:
       return null;
   }

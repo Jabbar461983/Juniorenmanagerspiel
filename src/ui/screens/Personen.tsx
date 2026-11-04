@@ -16,6 +16,10 @@ import {
   haertefallAktiv,
   infosVon,
   verfuegbareDialoge,
+  amtName,
+  prioritaetName,
+  HALTUNG_NAMEN,
+  haltungKategorie,
   chf,
   B,
   type Elternteil,
@@ -30,7 +34,7 @@ import { Gespraech } from '../components/Gespraech';
 import { geplanteGespraeche } from '../entwurf';
 import type { SpielApi } from '../useSpiel';
 
-type Filter = 'kinder' | 'trainer' | 'eltern' | 'ehemalige';
+type Filter = 'kinder' | 'trainer' | 'eltern' | 'vorstand' | 'ehemalige';
 
 const QUALI: Record<Trainer['qualifikation'], string> = {
   keine: 'keine J+S-Anerkennung',
@@ -68,6 +72,7 @@ function untertitel(s: GameState, p: Person): string {
     const teams = teamsVonTrainer(s, p.id).map((t) => t.name);
     return `${a} J. · ${teams.length ? teams.join(', ') : 'ohne Team'}`;
   }
+  if (p.rolle === 'vorstand') return `${a} J. · ${amtName(p.amt)} · ${HALTUNG_NAMEN[haltungKategorie(p.haltung)]}`;
   const kinder = (s.familien[p.familieId]?.kinderIds ?? []).map((id) => s.kinder[id]).filter((k) => k && k.status !== 'ausgetreten');
   const typ = p.bekannt.includes('typ') ? elternTyp(p.typ).name : 'Typ ?';
   return `${a} J. · ${typ}${kinder.length ? ` · Kind: ${kinder.map((k) => k!.vorname).join(', ')}` : ''}`;
@@ -255,12 +260,26 @@ function Detail({ spiel, s, p, schliessen, zeige, starte }: { spiel: SpielApi; s
               </button>
             </p>
           )}
+          {familie && (
+            <p className="klein">
+              Foto-Einwilligung für Social Media: {familie.fotoEinwilligung ? 'ja' : 'nein'}
+            </p>
+          )}
           {familie && familie.ausstand > 0 && (
             <p className="hinweis warn">
               Offene Beiträge der Familie: {chf(familie.ausstand)}
               {familie.ratenzahlung ? ' (Ratenzahlung läuft)' : familie.saeumig ? ' (zahlt zurzeit nicht)' : ''}
             </p>
           )}
+        </>
+      )}
+
+      {p.rolle === 'vorstand' && (
+        <>
+          <p>
+            <strong>{amtName(p.amt)}</strong> · Haltung zu den Junioren: <Badge ton={haltungKategorie(p.haltung) === 'unterstuetzer' ? 'gut' : haltungKategorie(p.haltung) === 'skeptisch' ? 'warn' : undefined}>{HALTUNG_NAMEN[haltungKategorie(p.haltung)]}</Badge>
+          </p>
+          <p className="klein">Priorität: {p.bekannt.includes('prioritaet') ? prioritaetName(p.prioritaet) : '? – im Gespräch herausfinden'}</p>
         </>
       )}
 
@@ -295,6 +314,7 @@ export function Personen({ spiel }: { spiel: SpielApi }) {
     let personen: Person[];
     if (filter === 'kinder') personen = Object.values(s.kinder).filter((k) => k.status !== 'ausgetreten');
     else if (filter === 'trainer') personen = Object.values(s.trainer).filter((t) => t.status === 'aktiv');
+    else if (filter === 'vorstand') personen = Object.values(s.vorstand.mitglieder);
     else if (filter === 'ehemalige') personen = [...Object.values(s.kinder).filter((k) => k.status === 'ausgetreten'), ...Object.values(s.trainer).filter((t) => t.status !== 'aktiv')];
     else {
       const aktiveFam = new Set(Object.values(s.kinder).filter((k) => k.status !== 'ausgetreten').map((k) => k.familieId));
@@ -305,7 +325,7 @@ export function Personen({ spiel }: { spiel: SpielApi }) {
     return personen.sort((a, b) => a.nachname.localeCompare(b.nachname) || a.vorname.localeCompare(b.vorname));
   }, [s, filter, suche]);
 
-  const person = auswahl ? (s.kinder[auswahl] ?? s.trainer[auswahl] ?? s.eltern[auswahl]) : undefined;
+  const person = auswahl ? (s.kinder[auswahl] ?? s.trainer[auswahl] ?? s.eltern[auswahl] ?? s.vorstand.mitglieder[auswahl]) : undefined;
 
   return (
     <div className="stapel">
@@ -317,6 +337,7 @@ export function Personen({ spiel }: { spiel: SpielApi }) {
                 ['kinder', 'Kinder'],
                 ['trainer', 'Trainer:innen'],
                 ['eltern', 'Eltern'],
+                ['vorstand', 'Vorstand'],
                 ['ehemalige', 'Ehemalige']
               ] as [Filter, string][]
             ).map(([id, label]) => (

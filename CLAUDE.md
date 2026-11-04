@@ -5,7 +5,7 @@ Streethockey-Vereins nach den Grundsätzen von Jugend+Sport. Ziel: möglichst vi
 glückliche Junior:innen. Vollständiges Konzept: `docs/spielkonzept.md`. Entscheide aus der
 Umsetzung: `docs/entscheide.md`. Etappen-Prompts: `docs/prompts/`.
 
-Stand: **Etappe 2 von 6** umgesetzt (Etappe 1: Kern-Simulation, Teams, Wirtschaft, Wettkampf, Ereignisse; Etappe 2: Eltern-Einfluss und Dialogsystem).
+Stand: **Etappe 3 von 6** umgesetzt (Etappe 1: Kern-Simulation, Teams, Wirtschaft, Wettkampf, Ereignisse; Etappe 2: Eltern-Einfluss und Dialogsystem; Etappe 3: Vorstand, Social Media, Sponsoren, Geldbeschaffung, Endbewertung, mehrere Saisons).
 
 ## Befehle
 
@@ -21,7 +21,7 @@ Nach jeder grösseren Änderung: `npm test` und `npm run build`.
 ```
 src/
   engine/     reiner TypeScript-Spielkern – KEIN React, KEINE Browser-APIs (kein window, fetch, IndexedDB)
-  content/    JSON-Inhalte: balancing.json, ereignisse.json, dialoge.json, namen.json, charakterzuege.json, ferien.json, anwerbung.json, gegner.json
+  content/    JSON-Inhalte: balancing.json, ereignisse.json, dialoge.json, aktivitaeten.json, verein.json, namen.json, charakterzuege.json, ferien.json, anwerbung.json, gegner.json
   ui/         React-Oberfläche (liest den Spielkern nur über src/engine/index.ts)
   storage/    SaveRepository-Interface, IndexedDB- und Memory-Umsetzung, JSON-Export/-Import
 public/portraits/   Bildpool (portraits.json + {gruppe}_{nummer}_{stimmung}.webp)
@@ -47,11 +47,16 @@ public/portraits/   Bildpool (portraits.json + {gruppe}_{nummer}_{stimmung}.webp
   in `engine/dialoge.ts` und im Typ `DialogBedingung` (`engine/config.ts`) ergänzen.
 - Verborgene Infos werden in `engine/infos.ts` aus dem Spielstand berechnet; `person.bekannt` speichert nur die offenbarten Schlüssel.
 - Eltern-Einfluss (Ansteckung, Zahlungen, Helfer:innen, Elternabend) liegt in `engine/eltern.ts`.
+- Vorstand, Sitzungen, GV, Konkurs-Kette und vorzeitiges Spielende: `engine/vorstand.ts`; Social Media: `engine/social.ts`;
+  Sponsoren: `engine/sponsoren.ts`; Geldbeschaffung: `engine/anlaesse.ts`; Endbewertung: `engine/bewertung.ts`.
+- Vorzeitiges Spielende immer über `state.lernmodus` absichern (im Lernmodus nur Warnungen).
+- `migriere()` arbeitet auf einer Kopie; Migrationen, die Zufall brauchen, nutzen einen eigenen aus dem Seed abgeleiteten `Rng`,
+  nie `state.rngState`.
 
 ### Vorbereitet für spätere Etappen
 
-Datenmodell enthält bereits: `Beziehung` zwischen Personen, `fairplay` bei Kindern, `einfluss`/`stimmung` bei
-Eltern, `verein.ruf` und `verein.vorstandEinfluss`, `qualifikation` (J+S) bei Trainer:innen,
+Datenmodell enthält bereits: `Beziehung` zwischen Personen, `fairplay` bei Kindern, `qualifikation` (J+S) bei Trainer:innen,
+Kriterium «Umgang mit heiklen Fällen» in der Endbewertung (bis Etappe 4 neutral),
 `state.erweiterungen` als Platz für neue Systeme. Supabase (Etappe 5) = neue Klasse, die `SaveRepository` erfüllt.
 
 ## Konventionen

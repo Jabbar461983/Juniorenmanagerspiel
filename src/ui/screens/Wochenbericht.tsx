@@ -1,5 +1,6 @@
 import { KATEGORIE_NAMEN, PHASEN_NAMEN, chf, datumText, type Buchung } from '../../engine';
 import { Badge, Delta, Karte, Kennzahl, Leer } from '../components/Basis';
+import { Endbewertung } from '../components/Endbewertung';
 import type { SpielApi } from '../useSpiel';
 
 function gruppiert(b: Buchung[]): [string, number][] {
@@ -35,9 +36,13 @@ export function Wochenbericht({ spiel }: { spiel: SpielApi }) {
 
       {r.saisonBilanz && (
         <Karte titel={`Saisonbilanz ${r.saisonBilanz.saison}`} className="hervorgehoben">
-          <p className="gross-text">
-            {r.saisonBilanz.bewertung} Punkte – «{r.saisonBilanz.titel}»
-          </p>
+          {r.saisonBilanz.endbewertung ? (
+            <Endbewertung eb={r.saisonBilanz.endbewertung} />
+          ) : (
+            <p className="gross-text">
+              {r.saisonBilanz.bewertung} Punkte – «{r.saisonBilanz.titel}»
+            </p>
+          )}
           <ul>
             <li>
               Junior:innen: {r.saisonBilanz.mitgliederStart} → {r.saisonBilanz.mitgliederEnde} (Ø Zufriedenheit {r.saisonBilanz.zufriedenheitSchnitt})
@@ -52,6 +57,9 @@ export function Wochenbericht({ spiel }: { spiel: SpielApi }) {
             ))}
           </ul>
           {s.spielende && <p className="hinweis">{s.spielende.text}</p>}
+          {s.spielende && (
+            <p className="klein">Die vollständige Endbewertung und die Chronik findest du in der Übersicht.</p>
+          )}
         </Karte>
       )}
 

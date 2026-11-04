@@ -8,6 +8,10 @@ import {
   beitraegeAenderbar,
   chf,
   jahresbeitrag,
+  AKTIVITAETEN,
+  GEGENLEISTUNG_NAMEN,
+  aktivitaetMoeglich,
+  helferPool,
   type Buchung,
   type Niveau,
   type Stufe
@@ -54,6 +58,95 @@ export function Finanzen({ spiel }: { spiel: SpielApi }) {
           <div className="kennzahl-wert">{chf(saisonBuchungen.reduce((a, b) => a + b.betrag, 0))}</div>
         </div>
       </div>
+
+      <Karte titel="Jahresbudget und Sponsoren">
+        <p>
+          Jahresbudget aus dem Gesamtverein für die nächste Saison:{' '}
+          <strong>{s.vorstand.gv.some((g) => g.saison === s.saison) ? chf(s.vorstand.jahresbudget) : 'noch offen'}</strong>{' '}
+          <span className="klein">(beschliesst die GV im Mai, abhängig von deinem Einfluss und der Zahl der Junior:innen; Buchung in Woche 1)</span>
+        </p>
+        {s.sponsoren.filter((x) => x.status === 'aktiv').length === 0 ? (
+          <p className="leer">Noch keine Sponsoren.</p>
+        ) : (
+          <ul className="liste">
+            {s.sponsoren
+              .filter((x) => x.status === 'aktiv')
+              .map((x) => (
+                <li key={x.id} className="liste-zeile">
+                  <span>
+                    <strong>{x.name}</strong> <span className="klein">{x.branche} · {GEGENLEISTUNG_NAMEN[x.gegenleistung]} · bis Saison {x.startSaison + x.laufzeit - 1}</span>
+                    {x.elternteilId && (
+                      <>
+                        {' '}
+                        <Badge ton="warn">Firma eines Elternteils</Badge>
+                      </>
+                    )}
+                  </span>
+                  <strong>{chf(x.betrag)}/Saison</strong>
+                </li>
+              ))}
+          </ul>
+        )}
+        <button
+          className="knopf"
+          disabled={spiel.stand!.entwurf.some((e) => e.typ === 'sponsorSuche') || s.sponsorSucheBis >= (s.saison - 1) * 52 + s.woche || !!s.spielende}
+          onClick={() => spiel.entscheiden({ typ: 'sponsorSuche' })}
+        >
+          {spiel.stand!.entwurf.some((e) => e.typ === 'sponsorSuche')
+            ? 'Sponsorensuche geplant'
+            : s.sponsorSucheBis >= (s.saison - 1) * 52 + s.woche
+              ? 'Sponsorensuche läuft'
+              : 'Aktiv nach Sponsoren suchen (4 Wochen)'}
+        </button>
+        <p className="klein">Sponsoren melden sich eher bei gutem Ruf und hoher Reichweite. Jeder Vertrag verlangt eine Gegenleistung.</p>
+      </Karte>
+
+      <Karte titel="Aktionen zur Geldbeschaffung">
+        <p className="klein">
+          Verfügbare Helfer:innen: {helferPool(s).length} (Eltern mit Rolle «Anlässe» oder viel Engagement). Laufen mehrere Aktionen gleichzeitig, sind dieselben Leute überlastet.
+        </p>
+        <ul className="massnahmen">
+          {AKTIVITAETEN.map((a) => {
+            const grund = aktivitaetMoeglich(spiel.stand!.state, a);
+            const geplant = spiel.stand!.entwurf.some((e) => e.typ === 'aktivitaet' && e.aktivitaetId === a.id);
+            return (
+              <li key={a.id} className="massnahme">
+                <div>
+                  <strong>{a.name}</strong>{' '}
+                  <span className="klein">
+                    · Vorbereitung {a.vorbereitung} Wo. · {a.helfer} Helfer:innen · Kosten {chf(a.kosten)} · Ertrag ca. {a.proReichweite ? 'je nach Reichweite' : `${chf(a.ertrag[0]!)}–${chf(a.ertrag[1]!)}`}
+                  </span>
+                  <p className="klein">{a.beschreibung}</p>
+                </div>
+                <button
+                  className="knopf"
+                  disabled={!!grund || geplant || !!s.spielende}
+                  title={grund ?? undefined}
+                  onClick={() => spiel.entscheiden({ typ: 'aktivitaet', aktivitaetId: a.id })}
+                >
+                  {geplant ? 'geplant' : grund ? grund : 'Starten'}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+        {spiel.stand!.state.aktivitaeten.length > 0 && (
+          <>
+            <h3>Laufend und abgeschlossen</h3>
+            <ul className="liste">
+              {[...spiel.stand!.state.aktivitaeten]
+                .reverse()
+                .slice(0, 8)
+                .map((a) => (
+                  <li key={a.id} className="liste-zeile">
+                    <span>{a.status === 'laufend' ? `${AKTIVITAETEN.find((x) => x.id === a.aktivitaetId)?.name} – in Vorbereitung` : a.text}</span>
+                    <Badge ton={a.status === 'laufend' ? 'info' : (a.ertrag ?? 0) > 0 ? 'gut' : 'warn'}>{a.status === 'laufend' ? 'läuft' : chf(a.ertrag ?? 0)}</Badge>
+                  </li>
+                ))}
+            </ul>
+          </>
+        )}
+      </Karte>
 
       <Karte titel="Mitgliederbeiträge" aktion={aenderbar ? <Badge ton="gut">änderbar (Vorbereitung)</Badge> : <Badge>nur in der Vorbereitung änderbar</Badge>}>
         <div className="formular-raster">

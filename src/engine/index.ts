@@ -18,3 +18,9 @@ export { offeneEreignisse, offenePflichtEreignisse, optionText, ersetzePlatzhalt
 export { bewertung, bewertungsTitel } from './saison';
 export { chf } from './util';
 export { Rng } from './rng';
+export { ANTRAG_NAMEN, HALTUNG_NAMEN, haltungKategorie, istSitzungswoche, wochenBisSitzung, zustimmung, einfluss } from './vorstand';
+export { AEMTER, AKTIVITAETEN, amtName, prioritaetName, type AktivitaetDef } from './config';
+export { aktivitaetMoeglich, helferPool } from './anlaesse';
+export { POST_NAMEN, BILD_NAMEN, frequenz, ohneEinwilligung, postsImMonat, reichweiteFaktor } from './social';
+export { GEGENLEISTUNG_NAMEN, aktiveSponsoren, benoetigtePosts, anfrageWahrscheinlichkeit } from './sponsoren';
+export { endbewertung } from './bewertung';

@@ -21,6 +21,7 @@ export function Start({ spiel, onGestartet }: { spiel: SpielApi; onGestartet: ()
   const [schwierigkeit, setSchwierigkeit] = useState<Stufe>('normal');
   const [budget, setBudget] = useState<number>(B.spiel.startbudgetStandard);
   const [seed, setSeed] = useState<number>(zufallsSeed);
+  const [lernmodus, setLernmodus] = useState(false);
   const [staende, setStaende] = useState<SpeicherMeta[]>([]);
 
   useEffect(() => {
@@ -34,7 +35,7 @@ export function Start({ spiel, onGestartet }: { spiel: SpielApi; onGestartet: ()
 
   async function starten(e: React.FormEvent) {
     e.preventDefault();
-    await spiel.neues({ vereinsname: name, laufzeit, startbudget: budget, seed });
+    await spiel.neues({ vereinsname: name, laufzeit, startbudget: budget, seed, lernmodus });
     onGestartet();
   }
 
@@ -68,7 +69,11 @@ export function Start({ spiel, onGestartet }: { spiel: SpielApi; onGestartet: ()
             <label>
               Laufzeit in Saisons
               <input type="number" min={1} max={20} value={laufzeit} onChange={(e) => setLaufzeit(Number(e.target.value))} />
-              <small>In Etappe 1 endet das Spiel nach der ersten Saison mit einer vorläufigen Bewertung.</small>
+              <small>Nach dieser Zahl von Saisons folgt die Endbewertung.</small>
+            </label>
+            <label className="checkbox">
+              <input type="checkbox" checked={lernmodus} onChange={(e) => setLernmodus(e.target.checked)} />
+              Lernmodus: kein vorzeitiges Spielende durch Absetzung, Konkurs oder Auflösung
             </label>
             <fieldset>
               <legend>Schwierigkeit</legend>

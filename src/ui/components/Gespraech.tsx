@@ -58,7 +58,14 @@ export function Gespraech({ spiel, dialogId, personId, ereignis, schliessen }: P
   }, []);
 
   if (!person) return null;
-  const grundstimmung = person.rolle === 'kind' ? person.zufriedenheit : person.rolle === 'elternteil' ? person.stimmung : 50 + person.motivation * 2;
+  const grundstimmung =
+    person.rolle === 'kind'
+      ? person.zufriedenheit
+      : person.rolle === 'elternteil'
+        ? person.stimmung
+        : person.rolle === 'trainer'
+          ? 50 + person.motivation * 2
+          : 50 + person.haltung / 2;
   const stimmung = stimmungAus(Math.max(0, Math.min(100, grundstimmung + (z.vertrauen - z.vertrauenStart) * 1.5)));
   const infoTitel = (schluessel: string) => infosVon(basis, person).find((i) => i.schluessel === schluessel);
 
